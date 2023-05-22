@@ -53,6 +53,8 @@ namespace Valve.VR.InteractionSystem
 
         public SteamVR_Action_Boolean uiInteractAction = SteamVR_Input.GetAction<SteamVR_Action_Boolean>("InteractUI");
 
+        public bool canAttach = true;
+
         public bool useHoverSphere = true;
         public Transform hoverSphereTransform;
         public float hoverSphereRadius = 0.05f;
@@ -69,6 +71,10 @@ namespace Valve.VR.InteractionSystem
 
         [Tooltip("A transform on the hand to center attached objects on")]
         public Transform objectAttachmentPoint;
+        [HideInInspector]
+        public bool keepAttachment = false;
+        [HideInInspector]
+        public bool hoveringGrabPoint = false;
 
         public Camera noSteamVRFallbackCamera;
         public float noSteamVRFallbackMaxDistanceNoItem = 10.0f;
@@ -360,10 +366,17 @@ namespace Valve.VR.InteractionSystem
         //-------------------------------------------------
         public void AttachObject(GameObject objectToAttach, GrabTypes grabbedWithType, AttachmentFlags flags = defaultAttachmentFlags, Transform attachmentOffset = null)
         {
+            if (!canAttach)
+                return;
+
             AttachedObject attachedObject = new AttachedObject();
             attachedObject.attachmentFlags = flags;
             attachedObject.attachedOffsetTransform = attachmentOffset;
             attachedObject.attachTime = Time.time;
+            attachedObject.interactable = objectToAttach.GetComponent<Interactable>();
+
+            if (!attachedObject.interactable.canAttachToHand)
+                return;
 
             if (flags == 0)
             {
@@ -399,7 +412,6 @@ namespace Valve.VR.InteractionSystem
             }
 
             attachedObject.attachedObject = objectToAttach;
-            attachedObject.interactable = objectToAttach.GetComponent<Interactable>();
             attachedObject.allowTeleportWhileAttachedToHand = objectToAttach.GetComponent<AllowTeleportWhileAttachedToHand>();
             attachedObject.handAttachmentPointTransform = this.transform;
 
@@ -601,99 +613,101 @@ namespace Valve.VR.InteractionSystem
             int index = attachedObjects.FindIndex(l => l.attachedObject == objectToDetach);
             if (index != -1)
             {
-                if (spewDebugText)
-                    HandDebugLog("DetachObject " + objectToDetach);
-
-                GameObject prevTopObject = currentAttachedObject;
-
-
-                if (attachedObjects[index].interactable != null)
+                if (attachedObjects[index].HasAttachFlag(AttachmentFlags.DetachFromOtherHand) || !keepAttachment)
                 {
-                    if (attachedObjects[index].interactable.hideHandOnAttach)
-                        Show();
+                    if (spewDebugText)
+                        HandDebugLog("DetachObject " + objectToDetach);
 
-                    if (attachedObjects[index].interactable.hideSkeletonOnAttach && mainRenderModel != null && mainRenderModel.displayHandByDefault)
-                        ShowSkeleton();
+                    GameObject prevTopObject = currentAttachedObject;
 
-                    if (attachedObjects[index].interactable.hideControllerOnAttach && mainRenderModel != null && mainRenderModel.displayControllerByDefault)
-                        ShowController();
-
-                    if (attachedObjects[index].interactable.handAnimationOnPickup != 0)
-                        StopAnimation();
-
-                    if (attachedObjects[index].interactable.setRangeOfMotionOnPickup != SkeletalMotionRangeChange.None)
-                        ResetTemporarySkeletonRangeOfMotion();
-                }
-
-                Transform parentTransform = null;
-                if (attachedObjects[index].isParentedToHand)
-                {
-                    if (restoreOriginalParent && (attachedObjects[index].originalParent != null))
+                    if (attachedObjects[index].interactable != null)
                     {
-                        parentTransform = attachedObjects[index].originalParent.transform;
+                        if (attachedObjects[index].interactable.hideHandOnAttach)
+                            Show();
+
+                        if (attachedObjects[index].interactable.hideSkeletonOnAttach && mainRenderModel != null && mainRenderModel.displayHandByDefault)
+                            ShowSkeleton();
+
+                        if (attachedObjects[index].interactable.hideControllerOnAttach && mainRenderModel != null && mainRenderModel.displayControllerByDefault)
+                            ShowController();
+
+                        if (attachedObjects[index].interactable.handAnimationOnPickup != 0)
+                            StopAnimation();
+
+                        if (attachedObjects[index].interactable.setRangeOfMotionOnPickup != SkeletalMotionRangeChange.None)
+                            ResetTemporarySkeletonRangeOfMotion();
                     }
 
-                    if (attachedObjects[index].attachedObject != null)
+                    Transform parentTransform = null;
+                    if (attachedObjects[index].isParentedToHand)
                     {
-                        attachedObjects[index].attachedObject.transform.parent = parentTransform;
-                    }
-                }
+                        if (restoreOriginalParent && (attachedObjects[index].originalParent != null))
+                        {
+                            parentTransform = attachedObjects[index].originalParent.transform;
+                        }
 
-                if (attachedObjects[index].HasAttachFlag(AttachmentFlags.TurnOnKinematic))
-                {
-                    if (attachedObjects[index].attachedRigidbody != null)
-                    {
-                        attachedObjects[index].attachedRigidbody.isKinematic = attachedObjects[index].attachedRigidbodyWasKinematic;
-                        attachedObjects[index].attachedRigidbody.collisionDetectionMode = attachedObjects[index].collisionDetectionMode;
+                        if (attachedObjects[index].attachedObject != null)
+                        {
+                            attachedObjects[index].attachedObject.transform.parent = parentTransform;
+                        }
                     }
-                }
 
-                if (attachedObjects[index].HasAttachFlag(AttachmentFlags.TurnOffGravity))
-                {
-                    if (attachedObjects[index].attachedObject != null)
+                    if (attachedObjects[index].HasAttachFlag(AttachmentFlags.TurnOnKinematic))
                     {
                         if (attachedObjects[index].attachedRigidbody != null)
-                            attachedObjects[index].attachedRigidbody.useGravity = attachedObjects[index].attachedRigidbodyUsedGravity;
+                        {
+                            attachedObjects[index].attachedRigidbody.isKinematic = attachedObjects[index].attachedRigidbodyWasKinematic;
+                            attachedObjects[index].attachedRigidbody.collisionDetectionMode = attachedObjects[index].collisionDetectionMode;
+                        }
                     }
-                }
 
-                if (attachedObjects[index].interactable != null && attachedObjects[index].interactable.handFollowTransform && HasSkeleton())
-                {
-                    skeleton.transform.localPosition = Vector3.zero;
-                    skeleton.transform.localRotation = Quaternion.identity;
-                }
+                    if (attachedObjects[index].HasAttachFlag(AttachmentFlags.TurnOffGravity))
+                    {
+                        if (attachedObjects[index].attachedObject != null)
+                        {
+                            if (attachedObjects[index].attachedRigidbody != null)
+                                attachedObjects[index].attachedRigidbody.useGravity = attachedObjects[index].attachedRigidbodyUsedGravity;
+                        }
+                    }
 
-                if (attachedObjects[index].attachedObject != null)
-                {
-                    if (attachedObjects[index].interactable == null || (attachedObjects[index].interactable != null && attachedObjects[index].interactable.isDestroying == false))
-                        attachedObjects[index].attachedObject.SetActive(true);
+                    if (attachedObjects[index].interactable != null && attachedObjects[index].interactable.handFollowTransform && HasSkeleton())
+                    {
+                        skeleton.transform.localPosition = Vector3.zero;
+                        skeleton.transform.localRotation = Quaternion.identity;
+                    }
 
-                    attachedObjects[index].attachedObject.SendMessage("OnDetachedFromHand", this, SendMessageOptions.DontRequireReceiver);
-                }
+                    if (attachedObjects[index].attachedObject != null)
+                    {
+                        if (attachedObjects[index].interactable == null || (attachedObjects[index].interactable != null && attachedObjects[index].interactable.isDestroying == false))
+                            attachedObjects[index].attachedObject.SetActive(true);
 
-                attachedObjects.RemoveAt(index);
+                        attachedObjects[index].attachedObject.SendMessage("OnDetachedFromHand", this, SendMessageOptions.DontRequireReceiver);
+                    }
 
-                CleanUpAttachedObjectStack();
+                    attachedObjects.RemoveAt(index);
 
-                GameObject newTopObject = currentAttachedObject;
+                    CleanUpAttachedObjectStack();
 
-                hoverLocked = false;
+                    GameObject newTopObject = currentAttachedObject;
+
+                    hoverLocked = false;
 
 
-                //Give focus to the top most object on the stack if it changed
-                if (newTopObject != null && newTopObject != prevTopObject)
-                {
-                    newTopObject.SetActive(true);
-                    newTopObject.SendMessage("OnHandFocusAcquired", this, SendMessageOptions.DontRequireReceiver);
+                    //Give focus to the top most object on the stack if it changed
+                    if (newTopObject != null && newTopObject != prevTopObject)
+                    {
+                        newTopObject.SetActive(true);
+                        newTopObject.SendMessage("OnHandFocusAcquired", this, SendMessageOptions.DontRequireReceiver);
+                    }
+
+                    CleanUpAttachedObjectStack();
+
+                    if (mainRenderModel != null)
+                        mainRenderModel.MatchHandToTransform(mainRenderModel.transform);
+                    if (hoverhighlightRenderModel != null)
+                        hoverhighlightRenderModel.MatchHandToTransform(hoverhighlightRenderModel.transform);
                 }
             }
-
-            CleanUpAttachedObjectStack();
-
-            if (mainRenderModel != null)
-                mainRenderModel.MatchHandToTransform(mainRenderModel.transform);
-            if (hoverhighlightRenderModel != null)
-                hoverhighlightRenderModel.MatchHandToTransform(hoverhighlightRenderModel.transform);
         }
 
 
@@ -861,6 +875,9 @@ namespace Valve.VR.InteractionSystem
                 return;
 
             if (applicationLostFocusObject.activeSelf)
+                return;
+
+            if (!canAttach)
                 return;
 
             float closestDistance = float.MaxValue;
@@ -1462,7 +1479,7 @@ namespace Valve.VR.InteractionSystem
 
                 if (explicitType == GrabTypes.Pinch && grabPinchAction.GetStateDown(handType))
                     return GrabTypes.Pinch;
-                if (explicitType == GrabTypes.Grip && grabGripAction.GetStateDown(handType))
+                if (!hoveringGrabPoint && explicitType == GrabTypes.Grip && grabGripAction.GetStateDown(handType))
                     return GrabTypes.Grip;
             }
             else
@@ -1477,7 +1494,7 @@ namespace Valve.VR.InteractionSystem
 
                 if (grabPinchAction != null && grabPinchAction.GetStateDown(handType))
                     return GrabTypes.Pinch;
-                if (grabGripAction != null && grabGripAction.GetStateDown(handType))
+                if (!hoveringGrabPoint && grabGripAction != null && grabGripAction.GetStateDown(handType))
                     return GrabTypes.Grip;
             }
 
@@ -1498,7 +1515,7 @@ namespace Valve.VR.InteractionSystem
 
                 if (explicitType == GrabTypes.Pinch && grabPinchAction.GetStateUp(handType))
                     return GrabTypes.Pinch;
-                if (explicitType == GrabTypes.Grip && grabGripAction.GetStateUp(handType))
+                if (!hoveringGrabPoint && explicitType == GrabTypes.Grip && grabGripAction.GetStateUp(handType))
                     return GrabTypes.Grip;
             }
             else
@@ -1513,7 +1530,7 @@ namespace Valve.VR.InteractionSystem
 
                 if (grabPinchAction.GetStateUp(handType))
                     return GrabTypes.Pinch;
-                if (grabGripAction.GetStateUp(handType))
+                if (!hoveringGrabPoint && grabGripAction.GetStateUp(handType))
                     return GrabTypes.Grip;
             }
 
@@ -1522,11 +1539,14 @@ namespace Valve.VR.InteractionSystem
 
         public bool IsGrabEnding(GameObject attachedObject)
         {
-            for (int attachedObjectIndex = 0; attachedObjectIndex < attachedObjects.Count; attachedObjectIndex++)
+            if (!keepAttachment)
             {
-                if (attachedObjects[attachedObjectIndex].attachedObject == attachedObject)
+                for (int attachedObjectIndex = 0; attachedObjectIndex < attachedObjects.Count; attachedObjectIndex++)
                 {
-                    return IsGrabbingWithType(attachedObjects[attachedObjectIndex].grabbedWithType) == false;
+                    if (attachedObjects[attachedObjectIndex].attachedObject == attachedObject)
+                    {
+                        return IsGrabbingWithType(attachedObjects[attachedObjectIndex].grabbedWithType) == false;
+                    }
                 }
             }
 
@@ -1549,7 +1569,7 @@ namespace Valve.VR.InteractionSystem
                     return grabPinchAction.GetState(handType);
 
                 case GrabTypes.Grip:
-                    return grabGripAction.GetState(handType);
+                    return !hoveringGrabPoint && grabGripAction.GetState(handType);
 
                 default:
                     return false;

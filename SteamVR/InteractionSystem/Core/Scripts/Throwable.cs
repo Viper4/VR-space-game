@@ -169,13 +169,16 @@ namespace Valve.VR.InteractionSystem
 
             rigidbody.interpolation = hadInterpolation;
 
-            Vector3 velocity;
-            Vector3 angularVelocity;
+            if(!rigidbody.isKinematic)
+            {
+                Vector3 velocity;
+                Vector3 angularVelocity;
 
-            GetReleaseVelocities(hand, out velocity, out angularVelocity);
+                GetReleaseVelocities(hand, out velocity, out angularVelocity);
 
-            rigidbody.velocity = velocity;
-            rigidbody.angularVelocity = angularVelocity;
+                rigidbody.velocity = velocity;
+                rigidbody.angularVelocity = angularVelocity;
+            }
         }
 
 

@@ -524,11 +524,29 @@ namespace Valve.VR
         {
             var meshRenderer = go.GetComponent<MeshRenderer>();
             if (meshRenderer != null)
-                DestroyImmediate(meshRenderer);
+            {
+                if (!Application.isPlaying)
+                {
+                    DestroyImmediate(meshRenderer);
+                }
+                else
+                {
+                    Destroy(meshRenderer);
+                }
+            }
 
             var meshFilter = go.GetComponent<MeshFilter>();
             if (meshFilter != null)
-                DestroyImmediate(meshFilter);
+            {
+                if (!Application.isPlaying)
+                {
+                    DestroyImmediate(meshFilter);
+                }
+                else
+                {
+                    Destroy(meshFilter);
+                }
+            }
         }
 
         private bool LoadComponents(RenderModelInterfaceHolder holder, string renderModelName)
@@ -620,8 +638,16 @@ namespace Valve.VR
                     models[componentRenderModelName] = model;
                 }
 
-                t.gameObject.AddComponent<MeshFilter>().mesh = model.mesh;
-                MeshRenderer newRenderer = t.gameObject.AddComponent<MeshRenderer>();
+                MeshRenderer newRenderer;
+                if(t.GetComponent<MeshFilter>() == null)
+                {
+                    t.gameObject.AddComponent<MeshFilter>().mesh = model.mesh;
+                    newRenderer = t.gameObject.AddComponent<MeshRenderer>();
+                }
+                else
+                {
+                    newRenderer = t.GetComponent<MeshRenderer>();
+                }
                 newRenderer.sharedMaterial = model.material;
                 meshRenderers.Add(newRenderer);
             }

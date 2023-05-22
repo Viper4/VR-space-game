@@ -72,6 +72,12 @@ namespace Valve.VR.InteractionSystem
         [Tooltip("Higher is better")]
         public int hoverPriority = 0;
 
+        public bool overrideAttachmentPoint = false;
+        [SerializeField] Vector3 attachmentPosition;
+        [SerializeField] Vector3 attachmentRotation;
+        Vector3 previousAttachmentPosition;
+        Vector3 previousAttachmentRotation;
+
         [System.NonSerialized]
         public Hand attachedToHand;
 
@@ -92,6 +98,7 @@ namespace Valve.VR.InteractionSystem
         public bool isHovering { get; protected set; }
         public bool wasHovering { get; protected set; }
 
+        public bool canAttachToHand = true;
 
         private void Awake()
         {
@@ -138,6 +145,9 @@ namespace Valve.VR.InteractionSystem
 
         protected virtual void CreateHighlightRenderers()
         {
+            if (!canAttachToHand)
+                return;
+
             existingSkinnedRenderers = this.GetComponentsInChildren<SkinnedMeshRenderer>(true);
             highlightHolder = new GameObject("Highlighter");
             highlightSkinnedRenderers = new SkinnedMeshRenderer[existingSkinnedRenderers.Length];
@@ -199,7 +209,7 @@ namespace Valve.VR.InteractionSystem
 
         protected virtual void UpdateHighlightRenderers()
         {
-            if (highlightHolder == null)
+            if (highlightHolder == null || !canAttachToHand)
                 return;
 
             for (int skinnedIndex = 0; skinnedIndex < existingSkinnedRenderers.Length; skinnedIndex++)
@@ -309,6 +319,14 @@ namespace Valve.VR.InteractionSystem
                 hand.skeleton.BlendToPoser(skeletonPoser, blendToPoseTime);
             }
 
+            if (overrideAttachmentPoint)
+            {
+                previousAttachmentPosition = hand.objectAttachmentPoint.localPosition;
+                previousAttachmentRotation = hand.objectAttachmentPoint.localEulerAngles;
+                hand.objectAttachmentPoint.localPosition = attachmentPosition;
+                hand.objectAttachmentPoint.localEulerAngles = attachmentRotation;
+            }
+
             attachedToHand = hand;
         }
 
@@ -329,11 +347,16 @@ namespace Valve.VR.InteractionSystem
                 onDetachedFromHand.Invoke(hand);
             }
 
-
             if (skeletonPoser != null)
             {
                 if (hand.skeleton != null)
                     hand.skeleton.BlendToSkeleton(releasePoseBlendTime);
+            }
+
+            if (overrideAttachmentPoint)
+            {
+                hand.objectAttachmentPoint.localPosition = previousAttachmentPosition;
+                hand.objectAttachmentPoint.localEulerAngles = previousAttachmentRotation;
             }
 
             attachedToHand = null;
