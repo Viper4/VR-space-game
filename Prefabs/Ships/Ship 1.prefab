@@ -129,7 +129,6 @@ MonoBehaviour:
   - {x: 0, y: 90, z: 0}
   - {x: 0, y: 135, z: 0}
   - {x: 0, y: 180, z: 0}
-  currentState: 0
   index: 0
 --- !u!1 &221687139130509260
 GameObject:
@@ -2937,7 +2936,6 @@ MonoBehaviour:
   eulerStates:
   - {x: -30, y: 0, z: 0}
   - {x: 30, y: 0, z: 0}
-  currentState: 0
   index: 0
 --- !u!65 &4770623931391169856
 BoxCollider:
@@ -3457,7 +3455,6 @@ MonoBehaviour:
   eulerStates:
   - {x: -30, y: 0, z: 0}
   - {x: 30, y: 0, z: 0}
-  currentState: 0
   index: 2
 --- !u!65 &1714805229670202709
 BoxCollider:
@@ -4972,10 +4969,11 @@ MonoBehaviour:
   radarOrigin: {fileID: 9176585795424057822}
   display: {fileID: 6458035107527616942}
   shipIcon: {fileID: 611118498840648750, guid: 5acb0bf0bb6fca4488cff03fba444b2f, type: 3}
-  projectileIcon: {fileID: 5176403761926369004, guid: b32d8d4e911a0d34f8720ea77022a65d,
-    type: 3}
-  defaultIcon: {fileID: 5176403761926369004, guid: b32d8d4e911a0d34f8720ea77022a65d,
-    type: 3}
+  friendlyShipColor: {r: 0, g: 0, b: 1, a: 1}
+  hostileShipColor: {r: 1, g: 1, b: 0, a: 1}
+  pointIcon: {fileID: 0}
+  projectileColor: {r: 1, g: 0, b: 0, a: 1}
+  celestialBodyColor: {r: 0, g: 1, b: 0, a: 1}
   displayPulse: {fileID: 2966265387227463239}
   pulseSpeed: 0.5
   radarSwitch: {fileID: 743686008910302693}
@@ -5084,7 +5082,6 @@ MonoBehaviour:
   eulerStates:
   - {x: -30, y: 0, z: 0}
   - {x: 30, y: 0, z: 0}
-  currentState: 0
   index: 1
 --- !u!65 &7682831021840293353
 BoxCollider:
@@ -5187,7 +5184,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6840926926157260148}
   serializedVersion: 4
-  m_Mass: 7500
+  m_Mass: 50
   m_Drag: 0
   m_AngularDrag: 0
   m_CenterOfMass: {x: 0, y: 0, z: 0}

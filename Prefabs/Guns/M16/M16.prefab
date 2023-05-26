@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 2993176751561570548}
   - component: {fileID: 6771335667690515079}
   - component: {fileID: 7218414190150239870}
+  - component: {fileID: 6515228514265868382}
   m_Layer: 8
   m_Name: M16
   m_TagString: PointerInteractable
@@ -255,6 +256,27 @@ MonoBehaviour:
   fireRate: 0.077
   burstDelay: 1
   burstAmount: 3
+--- !u!65 &6515228514265868382
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 261834499476838507}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.20033833, y: 1.05, z: 0.8982136}
+  m_Center: {x: -0.000000014901161, y: -0.1, z: 0.125}
 --- !u!1 &667464310092572925
 GameObject:
   m_ObjectHideFlags: 0
@@ -1909,7 +1931,6 @@ GameObject:
   - component: {fileID: 8252444564537861870}
   - component: {fileID: 1672303974166722357}
   - component: {fileID: 1714176002285364223}
-  - component: {fileID: 7578169345629924366}
   m_Layer: 8
   m_Name: BodyTop
   m_TagString: Untagged
@@ -1982,27 +2003,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &7578169345629924366
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8645825331979761978}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 0.20033833, y: 1.05, z: 0.8982136}
-  m_Center: {x: -0.000000014901161, y: -0.38, z: 0.046790004}
 --- !u!1 &8801068901142623344
 GameObject:
   m_ObjectHideFlags: 0

@@ -9,12 +9,19 @@ public class Radar : MonoBehaviour
     [SerializeField] int rangeIndex = 0;
     [SerializeField] LayerMask ignoreLayers;
     [SerializeField] Transform radarOrigin;
+
     [SerializeField] GameObject display;
     [SerializeField] GameObject shipIcon;
-    [SerializeField] GameObject projectileIcon;
-    [SerializeField] GameObject defaultIcon;
+    [SerializeField] Color friendlyShipColor;
+    [SerializeField] Color hostileShipColor;
+
+    [SerializeField] GameObject pointIcon;
+    [SerializeField] Color projectileColor;
+    [SerializeField] Color celestialBodyColor;
+
     [SerializeField] Transform displayPulse;
     [SerializeField] float pulseSpeed = 0.5f;
+
     [SerializeField] Switch radarSwitch;
     Dictionary<int, RadarIcon> instanceIDIconPair = new Dictionary<int, RadarIcon>();
 
@@ -80,12 +87,28 @@ public class Radar : MonoBehaviour
                             }
                             else
                             {
-                                RadarIcon newIcon = collider.transform.tag switch
+                                RadarIcon newIcon;
+                                switch (collider.transform.tag)
                                 {
-                                    "Ship" => Instantiate(shipIcon, transform).GetComponent<RadarIcon>(),
-                                    "Projectile" => Instantiate(projectileIcon, transform).GetComponent<RadarIcon>(),
-                                    _ => Instantiate(defaultIcon, transform).GetComponent<RadarIcon>(),
-                                };
+                                    case "Ship":
+                                        newIcon = Instantiate(shipIcon, transform).GetComponent<RadarIcon>();
+
+                                        break;
+                                    case "Projectile":
+                                        newIcon = Instantiate(pointIcon, transform).GetComponent<RadarIcon>();
+                                        newIcon.GetComponent<MeshRenderer>().sharedMaterial.color = projectileColor;
+                                        break;
+                                    case "CelestialBody":
+                                        newIcon = Instantiate(pointIcon, transform).GetComponent<RadarIcon>();
+                                        newIcon.GetComponent<MeshRenderer>().sharedMaterial.color = celestialBodyColor;
+                                        float iconRadius = collider.GetComponent<CelestialBodyGenerator>().shapeSettings.radius / radarRanges[rangeIndex];
+                                        newIcon.transform.localScale = new Vector3(iconRadius, iconRadius, iconRadius);
+                                        break;
+                                    default:
+                                        newIcon = Instantiate(pointIcon, transform).GetComponent<RadarIcon>();
+                                        break;
+                                }
+
                                 int colliderID = collider.transform.GetInstanceID();
                                 newIcon.CreateIcon(this, display.transform, colliderID, radarPosition, collider.transform.rotation);
                                 instanceIDIconPair.Add(colliderID, newIcon);
