@@ -12,6 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 783d31327df308f4a83c508760868385, type: 3}
   m_Name: Earth-Like Shape
   m_EditorClassIdentifier: 
+  meshSizeIndex: 0
+  levelOfDetail: 1
   radius: 20
   noiseLayers:
   - enabled: 1
@@ -94,10 +96,10 @@ MonoBehaviour:
         minValue: 0
       ridgeNoiseSettings:
         seed: {x: 0, y: 0, z: 0}
-        strength: 2.5
+        strength: 2
         layers: 6
         baseRoughness: 2
-        roughness: 1.5
+        roughness: 2
         persistence: 0.5
         minValue: 1
         weightMultiplier: 1.25

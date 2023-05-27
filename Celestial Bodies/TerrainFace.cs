@@ -5,91 +5,129 @@ using UnityEngine;
 public class TerrainFace
 {
     ShapeGenerator shapeGenerator;
-    Mesh mesh;
-    int resolution;
+    Mesh filterMesh;
+    Mesh colliderMesh;
+    int filterResolution;
+    int colliderResolution;
+    int numMeshesPerSide;
+    int row;
+    int col;
     Vector3 localUp;
     Vector3 localRight;
     Vector3 localForward;
 
-    public TerrainFace(ShapeGenerator shapeGenerator, Mesh mesh, int resolution, Vector3 localUp)
+    public TerrainFace(ShapeGenerator shapeGenerator, ShapeSettings settings, Mesh filterMesh, Mesh colliderMesh, int row, int col, Vector3 localUp)
     {
         this.shapeGenerator = shapeGenerator;
-        this.mesh = mesh;
-        this.resolution = resolution;
+        this.filterMesh = filterMesh;
+        this.colliderMesh = colliderMesh;
+        this.filterResolution = ShapeSettings.supportedMeshSizes[settings.meshSizeIndex];
+        this.colliderResolution = settings.meshSizeIndex > 1 ? ShapeSettings.supportedMeshSizes[settings.meshSizeIndex - 2] : ShapeSettings.supportedMeshSizes[settings.meshSizeIndex];
+        this.row = row;
+        this.col = col;
+        numMeshesPerSide = settings.levelOfDetail;
         this.localUp = localUp;
 
         localRight = new Vector3(localUp.y, localUp.z, localUp.x);
         localForward = Vector3.Cross(localUp, localRight);
     }
 
+    private Vector3 GetPointOnUnitSphere(Vector3 origin, Vector3 percent)
+    {
+        Vector3 pointOnUnitCube = origin + (2 * percent.x / numMeshesPerSide * localRight + 2 * percent.y / numMeshesPerSide * localForward);
+        float x2 = pointOnUnitCube.x * pointOnUnitCube.x;
+        float y2 = pointOnUnitCube.y * pointOnUnitCube.y;
+        float z2 = pointOnUnitCube.z * pointOnUnitCube.z;
+        Vector3 pointOnUnitSphere;
+        pointOnUnitSphere.x = pointOnUnitCube.x * Mathf.Sqrt(1f - y2 / 2f - z2 / 2f + y2 * z2 / 3f);
+        pointOnUnitSphere.y = pointOnUnitCube.y * Mathf.Sqrt(1f - x2 / 2f - z2 / 2f + x2 * z2 / 3f);
+        pointOnUnitSphere.z = pointOnUnitCube.z * Mathf.Sqrt(1f - x2 / 2f - y2 / 2f + x2 * y2 / 3f);
+        return pointOnUnitSphere;
+    }
+
     public void ConstructMesh()
     {
-        Vector3[] vertices = new Vector3[resolution * resolution]; // resolution vertices on each side of the mesh
-        int[] triangles = new int[(resolution - 1) * (resolution - 1) * 6]; // 2 triangles per sqaure so (resolution - 1)^2 faces * 2 tris * 3 vertices per tri
-        int triangleIndex = 0;
-        Vector2[] uv = mesh.uv;
+        Vector3[] filterVertices = new Vector3[filterResolution * filterResolution]; // resolution vertices on each side of the mesh
+        int[] filterTriangles = new int[(filterResolution - 1) * (filterResolution - 1) * 6]; // 2 triangles per sqaure so (resolution - 1)^2 faces * 2 tris * 3 vertices per tri
+        int filterTriangleIndex = 0;
+        Vector2[] uv = filterMesh.uv;
 
+        Vector3[] colliderVertices = new Vector3[colliderResolution * colliderResolution];
+        int[] colliderTriangles = new int[(colliderResolution - 1) * (colliderResolution - 1) * 6];
+        int colliderTriangleIndex = 0;
+
+        Vector3 startVertex = localUp + ((2f * row / numMeshesPerSide) - 1f) * localRight + ((2f * col / numMeshesPerSide) - 1f) * localForward;
         int i = 0;
-        for(int y = 0; y < resolution; y++)
+        int j = 0;
+        for (int y = 0; y < filterResolution; y++)
         {
-            for (int x = 0; x < resolution; x++)
+            for (int x = 0; x < filterResolution; x++)
             {
-                Vector2 percent = new Vector2(x, y) / (resolution - 1);
-                Vector3 pointOnUnitCube = localUp + (percent.x - .5f) * 2 * localRight + (percent.y - .5f) * 2 * localForward;
-                float x2 = pointOnUnitCube.x * pointOnUnitCube.x;
-                float y2 = pointOnUnitCube.y * pointOnUnitCube.y;
-                float z2 = pointOnUnitCube.z * pointOnUnitCube.z;
-                Vector3 pointOnUnitSphere;
-                pointOnUnitSphere.x = pointOnUnitCube.x * Mathf.Sqrt(1f - y2 / 2f - z2 / 2f + y2 * z2 / 3f);
-                pointOnUnitSphere.y = pointOnUnitCube.y * Mathf.Sqrt(1f - x2 / 2f - z2 / 2f + x2 * z2 / 3f);
-                pointOnUnitSphere.z = pointOnUnitCube.z * Mathf.Sqrt(1f - x2 / 2f - y2 / 2f + x2 * y2 / 3f);
-                vertices[i] = shapeGenerator.CalculatePointOnPlanet(pointOnUnitSphere);
+                filterVertices[i] = shapeGenerator.CalculatePointOnSphere(GetPointOnUnitSphere(startVertex, new Vector2(x, y) / (filterResolution - 1)));
 
-                if (x != resolution - 1 && y != resolution - 1)
+                if (x != filterResolution - 1 && y != filterResolution - 1)
                 {
-                    triangles[triangleIndex] = i;
-                    triangles[triangleIndex + 1] = i + resolution + 1;
-                    triangles[triangleIndex + 2] = i + resolution;
+                    filterTriangles[filterTriangleIndex] = i;
+                    filterTriangles[filterTriangleIndex + 1] = i + filterResolution + 1;
+                    filterTriangles[filterTriangleIndex + 2] = i + filterResolution;
 
-                    triangles[triangleIndex + 3] = i;
-                    triangles[triangleIndex + 4] = i + 1;
-                    triangles[triangleIndex + 5] = i + resolution + 1;
-                    triangleIndex += 6;
+                    filterTriangles[filterTriangleIndex + 3] = i;
+                    filterTriangles[filterTriangleIndex + 4] = i + 1;
+                    filterTriangles[filterTriangleIndex + 5] = i + filterResolution + 1;
+                    filterTriangleIndex += 6;
+                }
+
+                if(y < colliderResolution && x < colliderResolution)
+                {
+                    colliderVertices[j] = shapeGenerator.CalculatePointOnSphere(GetPointOnUnitSphere(startVertex, new Vector2(x, y) / (colliderResolution - 1)));
+
+                    if (x != colliderResolution - 1 && y != colliderResolution - 1)
+                    {
+                        colliderTriangles[colliderTriangleIndex] = j;
+                        colliderTriangles[colliderTriangleIndex + 1] = j + colliderResolution + 1;
+                        colliderTriangles[colliderTriangleIndex + 2] = j + colliderResolution;
+
+                        colliderTriangles[colliderTriangleIndex + 3] = j;
+                        colliderTriangles[colliderTriangleIndex + 4] = j + 1;
+                        colliderTriangles[colliderTriangleIndex + 5] = j + colliderResolution + 1;
+                        colliderTriangleIndex += 6;
+                    }
+                    j++;
                 }
                 i++;
             }
         }
-        mesh.Clear();
-        mesh.vertices = vertices;
-        mesh.triangles = triangles;
-        mesh.RecalculateNormals();
-        if(mesh.uv.Length == uv.Length)
-            mesh.uv = uv;
+
+        filterMesh.Clear();
+        filterMesh.vertices = filterVertices;
+        filterMesh.triangles = filterTriangles;
+        filterMesh.RecalculateNormals();
+        if(filterMesh.uv.Length == uv.Length)
+            filterMesh.uv = uv;
+
+        colliderMesh.Clear();
+        colliderMesh.vertices = colliderVertices;
+        colliderMesh.triangles = colliderTriangles;
+        colliderMesh.RecalculateNormals();
     }
 
     public void UpdateUVs(ColorGenerator colorGenerator)
     {
-        Vector2[] uv = new Vector2[resolution * resolution];
+        Vector2[] uv = new Vector2[filterResolution * filterResolution];
+        Vector3 startVertex = localUp + ((2f * row / numMeshesPerSide) - 1f) * localRight + ((2f * col / numMeshesPerSide) - 1f) * localForward;
         int i = 0;
-        for (int y = 0; y < resolution; y++)
+        for (int y = 0; y < filterResolution; y++)
         {
-            for (int x = 0; x < resolution; x++)
+            for (int x = 0; x < filterResolution; x++)
             {
-                Vector2 percent = new Vector2(x, y) / (resolution - 1);
-                Vector3 pointOnUnitCube = localUp + (percent.x - .5f) * 2 * localRight + (percent.y - .5f) * 2 * localForward;
-                float x2 = pointOnUnitCube.x * pointOnUnitCube.x;
-                float y2 = pointOnUnitCube.y * pointOnUnitCube.y;
-                float z2 = pointOnUnitCube.z * pointOnUnitCube.z;
-                Vector3 pointOnUnitSphere;
-                pointOnUnitSphere.x = pointOnUnitCube.x * Mathf.Sqrt(1f - y2 / 2f - z2 / 2f + y2 * z2 / 3f);
-                pointOnUnitSphere.y = pointOnUnitCube.y * Mathf.Sqrt(1f - x2 / 2f - z2 / 2f + x2 * z2 / 3f);
-                pointOnUnitSphere.z = pointOnUnitCube.z * Mathf.Sqrt(1f - x2 / 2f - y2 / 2f + x2 * y2 / 3f);
+                Vector2 percent = new Vector2(x, y) / (filterResolution - 1);
+                Vector3 pointOnUnitSphere = GetPointOnUnitSphere(startVertex, percent);
 
                 uv[i] = new Vector2(colorGenerator.BiomePercentFromPoint(pointOnUnitSphere), 0);
 
                 i++;
             }
         }
-        mesh.uv = uv;
+        filterMesh.uv = uv;
     }
 }

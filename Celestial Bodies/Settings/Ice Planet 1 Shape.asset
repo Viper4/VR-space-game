@@ -12,6 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 783d31327df308f4a83c508760868385, type: 3}
   m_Name: Ice Planet 1 Shape
   m_EditorClassIdentifier: 
+  meshSizeIndex: 4
+  levelOfDetail: 2
   radius: 20
   noiseLayers:
   - enabled: 1

@@ -4,12 +4,10 @@ using UnityEngine;
 
 public class CelestialBodyGenerator : MonoBehaviour
 {
-    [Range(2, 256)]
-    [SerializeField] int resolution = 8;
     public bool autoUpdate = true;
     public enum FaceRenderMask
     {
-        All, 
+        All,
         Top,
         Bottom,
         Left,
@@ -31,6 +29,7 @@ public class CelestialBodyGenerator : MonoBehaviour
     ColorGenerator colorGenerator;
 
     [SerializeField, HideInInspector] MeshFilter[] meshFilters;
+    MeshCollider[] meshColliders;
     TerrainFace[] terrainFaces;
 
     [SerializeField] Vector2 seedRange = new Vector2(-999, 999);
@@ -58,7 +57,7 @@ public class CelestialBodyGenerator : MonoBehaviour
             originalShapeSettings = null;
             originalColorSettings = null;
         }
-        if(colorSettings.bodyMaterial == null)
+        if (colorSettings.bodyMaterial == null)
         {
             colorSettings.bodyMaterial = new Material(colorSettings.shader);
         }
@@ -66,30 +65,57 @@ public class CelestialBodyGenerator : MonoBehaviour
         shapeGenerator.UpdateSettings(shapeSettings);
         colorGenerator.UpdateSettings(colorSettings, materialInstance);
 
-        if (meshFilters == null || meshFilters.Length == 0)
+        int numMeshes = 6 * shapeSettings.levelOfDetail * shapeSettings.levelOfDetail;
+        if (meshFilters == null || meshFilters.Length != numMeshes || meshColliders == null || meshColliders.Length != numMeshes)
         {
-            meshFilters = new MeshFilter[6];
+            for (int i = 0; i < meshFilters.Length; i++)
+            {
+                if (meshFilters[i] != null)
+                {
+                    if (Application.isEditor)
+                    {
+                        DestroyImmediate(meshFilters[i].gameObject);
+                    }
+                    else
+                    {
+                        Destroy(meshFilters[i].gameObject);
+                    }
+                }
+            }
+            meshFilters = new MeshFilter[numMeshes];
+            meshColliders = new MeshCollider[numMeshes];
         }
-        terrainFaces = new TerrainFace[6];
+        terrainFaces = new TerrainFace[numMeshes];
 
         Vector3[] directions = new Vector3[] { Vector3.up, Vector3.down, Vector3.right, Vector3.left, Vector3.forward, Vector3.back };
 
-        for (int i = 0; i < 6; i++)
+        int index = 0;
+        for(int i = 0; i < 6; i++)
         {
-            if (meshFilters[i] == null)
+            for(int r = 0; r < shapeSettings.levelOfDetail; r++)
             {
-                GameObject meshObject = new GameObject("Mesh");
-                meshObject.transform.SetParent(transform, false);
+                for(int c = 0; c < shapeSettings.levelOfDetail; c++)
+                {
+                    if (meshFilters[index] == null)
+                    {
+                        GameObject meshObject = new GameObject("Mesh" + i);
+                        meshObject.transform.SetParent(transform, false);
 
-                meshObject.AddComponent<MeshRenderer>();
-                meshFilters[i] = meshObject.AddComponent<MeshFilter>();
-                meshFilters[i].sharedMesh = new Mesh();
+                        meshObject.AddComponent<MeshRenderer>();
+                        meshFilters[index] = meshObject.AddComponent<MeshFilter>();
+                        meshFilters[index].sharedMesh = new Mesh();
+
+                        meshColliders[index] = meshObject.AddComponent<MeshCollider>();
+                        meshColliders[index].sharedMesh = new Mesh();
+                    }
+                    meshFilters[index].GetComponent<MeshRenderer>().sharedMaterial = materialInstance;
+
+                    terrainFaces[index] = new TerrainFace(shapeGenerator, shapeSettings, meshFilters[index].sharedMesh, meshColliders[index].sharedMesh, r, c, directions[i]);
+                    bool renderFace = renderMask == FaceRenderMask.All || (int)renderMask - 1 == i;
+                    meshFilters[index].gameObject.SetActive(renderFace);
+                    index++;
+                }
             }
-            meshFilters[i].GetComponent<MeshRenderer>().sharedMaterial = materialInstance;
-
-            terrainFaces[i] = new TerrainFace(shapeGenerator, meshFilters[i].sharedMesh, resolution, directions[i]);
-            bool renderFace = renderMask == FaceRenderMask.All || (int)renderMask - 1 == i;
-            meshFilters[i].gameObject.SetActive(renderFace);
         }
     }
 
@@ -149,8 +175,7 @@ public class CelestialBodyGenerator : MonoBehaviour
     {
         if (autoUpdate)
         {
-            Init();
-            GenerateMeshes();
+            GenerateCelestialBody(); // Meshes get reset when changing LOD or mesh size
         }
     }
 
@@ -165,11 +190,12 @@ public class CelestialBodyGenerator : MonoBehaviour
 
     void GenerateMeshes()
     {
-        for (int i = 0; i < 6; i++)
+        for (int i = 0; i < meshFilters.Length; i++)
         {
             if (meshFilters[i].gameObject.activeSelf)
             {
                 terrainFaces[i].ConstructMesh();
+                meshColliders[i].convex = true;
             }
         }
         colorGenerator.UpdateElevation(shapeGenerator.elevationMinMax);
@@ -178,7 +204,7 @@ public class CelestialBodyGenerator : MonoBehaviour
     void GenerateColors()
     {
         colorGenerator.UpdateColors();
-        for (int i = 0; i < 6; i++)
+        for (int i = 0; i < meshFilters.Length; i++)
         {
             if (meshFilters[i].gameObject.activeSelf)
             {

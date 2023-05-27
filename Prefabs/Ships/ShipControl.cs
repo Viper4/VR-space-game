@@ -16,7 +16,7 @@ public class ShipControl : MonoBehaviour
     [SerializeField] Transform[] turretPoints;
     Turret[] turrets;
     bool turretControl = false;
-    bool autoStabilize = false;
+    bool flightAssist = false;
 
     [SerializeField] Transform pilot;
     Camera pilotCam;
@@ -60,7 +60,6 @@ public class ShipControl : MonoBehaviour
         xRotationPID = new PIDController(P, I, D);
         yRotationPID = new PIDController(P, I, D);
         zRotationPID = new PIDController(P, I, D);
-        //shipRigidbody.AddTorque(new Vector3(0.05f, 0.05f, 0.05f), ForceMode.VelocityChange);
         pilotCam = pilot.GetComponent<Camera>();
     }
 
@@ -169,7 +168,7 @@ public class ShipControl : MonoBehaviour
         Vector3 force = launchMode ? launchForce * throttle.value * Vector3.forward : cruiseForce * throttle.value * Vector3.forward;
         shipRigidbody.AddRelativeForce(force, ForceMode.Acceleration);
 
-        if (autoStabilize)
+        if (flightAssist)
         {
             if(turretControl || rotateDirection == Vector3.zero)
             {
@@ -182,8 +181,9 @@ public class ShipControl : MonoBehaviour
             {
                 Vector3 localVelocity = shipRigidbody.transform.InverseTransformDirection(shipRigidbody.velocity);
                 float forceCorrectionX = -xRotationPID.GetOutput(localVelocity.x, Time.deltaTime);
-                float forceCorrectionY = -xRotationPID.GetOutput(localVelocity.y, Time.deltaTime);
-                shipRigidbody.AddRelativeForce(new Vector3(forceCorrectionX, forceCorrectionY) * translationForce, ForceMode.Acceleration);
+                float forceCorrectionY = -yRotationPID.GetOutput(localVelocity.y, Time.deltaTime);
+                float forceCorrectionZ = -zRotationPID.GetOutput(localVelocity.z, Time.deltaTime);
+                shipRigidbody.AddRelativeForce(new Vector3(forceCorrectionX, forceCorrectionY, forceCorrectionZ) * translationForce, ForceMode.Acceleration);
             }
         }
     }
@@ -267,8 +267,8 @@ public class ShipControl : MonoBehaviour
                     bayDoorAnimation.Play("OpenTorpedoBay");
                 }
                 break;
-            case 2: // Auto Stabilize
-                autoStabilize = state == 1;
+            case 2: // Flight assist
+                flightAssist = state == 1;
                 break;
         }
     }
