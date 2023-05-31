@@ -31,19 +31,12 @@ public class ShipJoystick : MonoBehaviour
     Vector3 toggleStartEulers;
     [SerializeField] Vector3 toggleEndEulers;
 
-    [SerializeField] Transform pad;
-    [SerializeField] MeshRenderer padHighlight;
-    [SerializeField] float maxPadAngle = 10;
-    bool padSelected;
-    public Vector2 padPosition { get; private set; }
-
     public Vector3 direction { get; private set; }
 
     public event JoystickEventHandler JoystickTriggerDown;
     public event JoystickEventHandler JoystickTriggerUp;
     public event JoystickEventHandler JoystickRelease;
     public event JoystickEventHandler JoystickToggle;
-    public event JoystickEventHandler JoystickPad;
 
     void Start()
     {
@@ -91,24 +84,13 @@ public class ShipJoystick : MonoBehaviour
                 {
                     if (touchpadPosition.y < 0)
                     {
-                        OnJoystickPadToggle();
+                        
                     }
                     else if (touchpadPosition.y > 0)
                     {
                         
                     }
                 }
-            }
-
-            if(padSelected)
-            {
-                padPosition = touchpadPosition;
-                pad.localEulerAngles = new Vector2(touchpadPosition.y * maxPadAngle, -touchpadPosition.x * maxPadAngle);
-            }
-            else
-            {
-                padPosition = Vector2.zero;
-                pad.localEulerAngles = Vector3.zero;
             }
 
             if (VRControl.playerSettings.shipControls.grabToggle)
@@ -135,8 +117,6 @@ public class ShipJoystick : MonoBehaviour
             }
             trigger.localPosition = new Vector3(trigger.localPosition.x, trigger.localPosition.y, triggerStartPos);
             trigger.localEulerAngles = new Vector3(0, trigger.localEulerAngles.y, trigger.localEulerAngles.z);
-            padPosition = Vector3.zero;
-            pad.localEulerAngles = Vector2.zero;
             direction = Vector3.zero;
         }
     }
@@ -204,21 +184,6 @@ public class ShipJoystick : MonoBehaviour
             toggleSwitch.localEulerAngles = toggleEndEulers;
         }
         JoystickToggle?.Invoke();
-    }
-
-    public virtual void OnJoystickPadToggle()
-    {
-        if (padSelected)
-        {
-            padSelected = false;
-            padHighlight.enabled = false;
-        }
-        else
-        {
-            padSelected = true;
-            padHighlight.enabled = true;
-        }
-        JoystickPad?.Invoke();
     }
 
     public delegate void JoystickEventHandler();

@@ -22,6 +22,8 @@ public class VRPointer : MonoBehaviour
     Collider previousUIContact;
     PointerEventData pointerEventData;
 
+    Switch previousSwitch;
+
     [SerializeField] LayerMask interactableLayers;
     [SerializeField] Color pointerColor = Color.yellow;
     [SerializeField] Color grabColor = Color.green;
@@ -66,9 +68,10 @@ public class VRPointer : MonoBehaviour
                 dot.GetComponent<MeshRenderer>().material.color = pointerColor;
             }
 
-            if (Physics.Raycast(attachmentPoint.position, attachmentPoint.forward, out RaycastHit hit, rayDistance, interactableLayers, QueryTriggerInteraction.Ignore))
+            if (Physics.Raycast(attachmentPoint.position, attachmentPoint.forward, out RaycastHit hit, rayDistance, interactableLayers, QueryTriggerInteraction.Collide))
             {
-                if(hit.collider.gameObject.layer == 5)
+                Debug.DrawLine(attachmentPoint.position, hit.point, Color.red, 0.1f);
+                if(hit.collider.gameObject.layer == 5) // UI
                 {
                     ShowPointer(new Vector3[] { attachmentPoint.position, hit.point });
                     Selectable selectable = hit.collider.transform.parent.GetComponent<Selectable>();
@@ -97,7 +100,7 @@ public class VRPointer : MonoBehaviour
                                 button.OnPointerClick(pointerEventData);
                                 break;
                             case Slider slider:
-
+                                
                                 break;
                             case Toggle toggle:
                                 toggle.OnPointerClick(pointerEventData);
@@ -114,24 +117,18 @@ public class VRPointer : MonoBehaviour
                 else
                 {
                     PointerExit();
-                    if (hit.transform.HasTag("PointerInteractable"))
-                    {
-                        if (hit.transform.GetComponent<Interactable>().canAttachToHand)
-                        {
-                            ShowPointer(new Vector3[] { attachmentPoint.position, hit.point });
 
-                            if (grabAction.GetStateDown(pose.inputSource))
-                            {
-                                if(hit.transform.TryGetComponent<Throwable>(out var throwable))
-                                {
-                                    hand.AttachObject(hit.transform.gameObject, hand.GetBestGrabbingType(), throwable.attachmentFlags, throwable.attachmentOffset);
-                                }
-                                else
-                                {
-                                    hand.AttachObject(hit.transform.gameObject, hand.GetBestGrabbingType());
-                                }
-                            }
-                        }
+                    if (hit.collider.transform.HasTag("PointerInteractable"))
+                    {
+                        ShowPointer(new Vector3[] { attachmentPoint.position, hit.point });
+
+                        TestPointerInteractable(hit.collider.transform);
+                    }
+                    else if (hit.transform.HasTag("PointerInteractable"))
+                    {
+                        ShowPointer(new Vector3[] { attachmentPoint.position, hit.point });
+
+                        TestPointerInteractable(hit.transform);
                     }
                 }
             }
@@ -146,12 +143,45 @@ public class VRPointer : MonoBehaviour
         }
     }
 
+    void TestPointerInteractable(Transform hit)
+    {
+        if (hit.TryGetComponent<Interactable>(out var hitInteractable) && hitInteractable.canAttachToHand)
+        {
+            if (grabAction.GetStateDown(pose.inputSource))
+            {
+                if (hitInteractable.TryGetComponent<Throwable>(out var throwable))
+                {
+                    hand.AttachObject(hitInteractable.gameObject, hand.GetBestGrabbingType(), throwable.attachmentFlags, throwable.attachmentOffset);
+                }
+                else
+                {
+                    hand.AttachObject(hitInteractable.gameObject, hand.GetBestGrabbingType());
+                }
+            }
+        }
+        else if (hit.TryGetComponent<Switch>(out var hitSwitch))
+        {
+            hitSwitch.Hover(true);
+            if (hitSwitch.toggleAction.GetStateDown(pose.inputSource))
+            {
+                hitSwitch.Toggle();
+            }
+            previousSwitch = hitSwitch;
+        }
+    }
+
     void PointerExit()
     {
-        if (previousUIContact)
+        if (previousUIContact != null)
         {
             previousUIContact.transform.parent.GetComponent<Selectable>().OnPointerExit(pointerEventData);
             previousUIContact = null;
+        }
+
+        if (previousSwitch != null)
+        {
+            previousSwitch.Hover(false);
+            previousSwitch = null;
         }
     }
 

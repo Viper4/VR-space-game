@@ -21,6 +21,7 @@ public class FilterSettings
 
     public class BaseSettings
     {
+        public Vector3 scale;
         public Vector3 seed;
         public float strength = 1;
     }
@@ -45,14 +46,20 @@ public class FilterSettings
     [System.Serializable]
     public class PerlinNoiseSettings : SimplexNoiseSettings
     {
-        public float scale = 1;
+        
     }
 
     [System.Serializable]
     public class CraterSettings : BaseSettings
     {
-        int craters;
+        public int craters;
+        public float minCraterRadius = 0.01f;
+        public float maxCraterRadius = 0.1f;
         [Range(0, 1)]
-        float sizeDistribution = 0.5f;
+        public float craterFloor = 0;
+        [Range(1, 16)]
+        public float sizeDistribution = 1;
+        public float ridgeHeight = 0.1f;
+        public float ridgeWidth = 0.1f;
     }
 }

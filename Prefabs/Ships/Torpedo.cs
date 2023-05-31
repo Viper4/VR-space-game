@@ -37,7 +37,7 @@ public class Torpedo : MonoBehaviour
             {
                 _rigidbody.AddRelativeForce(Vector3.forward * propulsionForce, ForceMode.Acceleration);
             }
-            if (CustomExtensions.SqrDistance(transform.position, target.position) < detonationDistance * detonationDistance)
+            if ((target.position - transform.position).sqrMagnitude < detonationDistance * detonationDistance)
             {
                 Detonate();
             }

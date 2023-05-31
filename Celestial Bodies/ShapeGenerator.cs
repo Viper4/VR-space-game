@@ -5,16 +5,21 @@ using UnityEngine;
 public class ShapeGenerator
 {
     ShapeSettings settings;
-    IFilter[] noiseFilters;
+    IFilter[] filters;
     public MinMax elevationMinMax;
 
     public void UpdateSettings(ShapeSettings settings)
     {
         this.settings = settings;
-        noiseFilters = new IFilter[settings.noiseLayers.Length];
-        for (int i = 0; i < noiseFilters.Length; i++)
+        if (settings.meshColliderSizeIndex > settings.meshSizeIndex)
         {
-            noiseFilters[i] = FilterCreator.CreateFilter(settings.noiseLayers[i].noiseSettings);
+            settings.meshColliderSizeIndex = settings.meshSizeIndex;
+            Debug.LogWarning("Mesh Collider resolution cannot exceed mesh filter resolution. Set meshColliderSizeIndex to meshSizeIndex.");
+        }
+        filters = new IFilter[settings.filterLayers.Length];
+        for (int i = 0; i < filters.Length; i++)
+        {
+            filters[i] = FilterCreator.CreateFilter(settings.filterLayers[i].filterSettings);
         }
         elevationMinMax = new MinMax();
     }
@@ -24,21 +29,21 @@ public class ShapeGenerator
         float firstLayerValue = 0;
         float elevation = 0;
 
-        if(noiseFilters.Length > 0)
+        if (filters.Length > 0)
         {
-            firstLayerValue = noiseFilters[0].Evaluate(pointOnUnitSphere);
-            if (settings.noiseLayers[0].enabled)
+            firstLayerValue = filters[0].Evaluate(pointOnUnitSphere);
+            if (settings.filterLayers[0].enabled)
             {
                 elevation = firstLayerValue;
             }
         }
 
-        for (int i = 1; i < noiseFilters.Length; i++)
+        for (int i = 1; i < filters.Length; i++)
         {
-            if (settings.noiseLayers[i].enabled)
+            if (settings.filterLayers[i].enabled)
             {
-                float mask = settings.noiseLayers[i].useFirstLayerAsMask ? firstLayerValue : 1;
-                elevation += noiseFilters[i].Evaluate(pointOnUnitSphere) * mask;
+                float mask = settings.filterLayers[i].useFirstLayerAsMask ? firstLayerValue : 1;
+                elevation += filters[i].Evaluate(pointOnUnitSphere) * mask;
             }
         }
         elevation = (1 + elevation) * settings.radius;

@@ -9,7 +9,7 @@ public class FloatingWorldOrigin : MonoBehaviour
 
     void LateUpdate()
     {
-        if(transform.position.x > shiftThreshold || transform.position.y > shiftThreshold || transform.position.z > shiftThreshold)
+        if(Mathf.Abs(transform.position.x) > shiftThreshold || Mathf.Abs(transform.position.y) > shiftThreshold || Mathf.Abs(transform.position.z) > shiftThreshold)
         {
             for(int i = 0; i < SceneManager.sceneCount; i++)
             {

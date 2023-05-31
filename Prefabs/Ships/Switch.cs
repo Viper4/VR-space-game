@@ -5,29 +5,40 @@ using Valve.VR;
 
 public class Switch : MonoBehaviour
 {
-    [SerializeField] SteamVR_Action_Boolean toggleAction;
-    [SerializeField] MeshRenderer highlight;
+    public SteamVR_Action_Boolean toggleAction;
+    MeshRenderer highlight;
+    AudioSource audioSource;
     [SerializeField] Vector3[] eulerStates;
-    public int currentState { get; private set; } = 0;
+    [SerializeField] MeshRenderer indicator;
+    [SerializeField] Color[] indicatorColors;
+    [SerializeField] Color[] indicatorEmissionColors;
+    public int currentState;
     [SerializeField] int index;
 
-    public event SwitchEventHandler SwitchToggle;
+    public event SwitchEventHandler OnSwitchToggle;
+
+    private void Start()
+    {
+        highlight = transform.GetChild(0).GetComponent<MeshRenderer>();
+        audioSource = GetComponent<AudioSource>();
+        transform.eulerAngles = eulerStates[currentState];
+        if (indicator != null)
+        {
+            indicator.material = Instantiate(indicator.sharedMaterial);
+            indicator.material.SetColor("_MainColor", indicatorColors[currentState]);
+            indicator.material.SetColor("_EmissionColor", indicatorEmissionColors[currentState]);
+        }
+    }
 
     private void OnTriggerStay(Collider other)
     {
         if (other.transform.HasTag("Hand"))
         {
             SteamVR_Behaviour_Pose poseInTrigger = other.GetComponent<SteamVR_Behaviour_Pose>();
-            highlight.enabled = true;
+            Hover(true);
             if (toggleAction.GetStateDown(poseInTrigger.inputSource))
             {
-                currentState++;
-                if (currentState > eulerStates.Length - 1)
-                    currentState = 0;
-                transform.localEulerAngles = eulerStates[currentState];
-                
-                OnToggle(currentState);
-                highlight.enabled = false;
+                Toggle();
             }
         }
     }
@@ -36,13 +47,35 @@ public class Switch : MonoBehaviour
     {
         if (other.transform.HasTag("Hand"))
         {
-            highlight.enabled = false;
+            Hover(false);
         }
+    }
+
+    public void Hover(bool value)
+    {
+        highlight.enabled = value;
+    }
+
+    public void Toggle()
+    {
+        currentState++;
+        if (currentState > eulerStates.Length - 1)
+            currentState = 0;
+        transform.localEulerAngles = eulerStates[currentState];
+        if(indicator != null)
+        {
+            indicator.material.SetColor("_MainColor", indicatorColors[currentState]);
+            indicator.material.SetColor("_EmissionColor", indicatorColors[currentState]);
+        }
+
+        OnToggle(currentState);
+        audioSource.Play();
+        highlight.enabled = false;
     }
 
     public virtual void OnToggle(int newState)
     {
-        SwitchToggle?.Invoke(index, newState);
+        OnSwitchToggle?.Invoke(index, newState);
     }
 
     public delegate void SwitchEventHandler(int index, int state);

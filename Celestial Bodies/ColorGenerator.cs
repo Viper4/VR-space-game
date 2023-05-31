@@ -8,7 +8,7 @@ public class ColorGenerator
     Texture2D texture;
     Material materialInstance;
     const int textureResolution = 50;
-    IFilter biomeNoiseFilter;
+    IFilter biomeFilter;
 
     public void UpdateSettings(ColorSettings settings, Material materialInstance)
     {
@@ -18,7 +18,7 @@ public class ColorGenerator
             texture = new Texture2D(textureResolution, settings.biomeColorSettings.biomes.Length, TextureFormat.RGBA32, false);
         }
         this.materialInstance = materialInstance;
-        biomeNoiseFilter = FilterCreator.CreateFilter(settings.biomeColorSettings.noise);
+        biomeFilter = FilterCreator.CreateFilter(settings.biomeColorSettings.filter);
     }
 
     public void UpdateElevation(MinMax elevationMinMax)
@@ -30,7 +30,7 @@ public class ColorGenerator
     public float BiomePercentFromPoint(Vector3 pointOnUnitSphere)
     {
         float heightPercent = (pointOnUnitSphere.y + 1) * 0.5f;
-        heightPercent += (biomeNoiseFilter.Evaluate(pointOnUnitSphere) - settings.biomeColorSettings.noiseOffset) * settings.biomeColorSettings.noiseStrength;
+        heightPercent += (biomeFilter.Evaluate(pointOnUnitSphere) - settings.biomeColorSettings.offset) * settings.biomeColorSettings.strength;
         float biomeIndex = 0;
         int numBiomes = settings.biomeColorSettings.biomes.Length;
         float blendRange = settings.biomeColorSettings.blend * 0.5f + 0.001f;
@@ -51,10 +51,10 @@ public class ColorGenerator
         int colorIndex = 0;
         foreach(ColorSettings.BiomeColorSettings.Biome biome in settings.biomeColorSettings.biomes)
         {
+            Color tintColor = biome.tint;
             for (int i = 0; i < textureResolution; i++)
             {
                 Color gradientColor = biome.gradient.Evaluate(i / (textureResolution - 1f));
-                Color tintColor = biome.tint;
                 colors[colorIndex] = gradientColor * (1 - biome.tintPercent) + tintColor * biome.tintPercent;
                 colorIndex++;
             }

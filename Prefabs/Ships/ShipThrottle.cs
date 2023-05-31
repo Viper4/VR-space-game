@@ -22,27 +22,7 @@ public class ShipThrottle : MonoBehaviour
     float lockStartPos;
     [SerializeField] float lockEndPos;
 
-    [SerializeField] Switch[] switches;
-
-    public event ThrottleEventHandler SwitchToggle;
-
     public float value { get; private set; }
-
-    private void OnEnable()
-    {
-        foreach (Switch _switch in switches)
-        {
-            _switch.SwitchToggle += OnSwitchToggle;
-        }
-    }
-
-    private void OnDisable()
-    {
-        foreach (Switch _switch in switches)
-        {
-            _switch.SwitchToggle -= OnSwitchToggle;
-        }
-    }
 
     void Start()
     {
@@ -131,11 +111,4 @@ public class ShipThrottle : MonoBehaviour
         pose = null;
         canGrab = true;
     }
-
-    public virtual void OnSwitchToggle(int index, int state)
-    {
-        SwitchToggle?.Invoke(index, state);
-    }
-
-    public delegate void ThrottleEventHandler(int index, int state);
 }

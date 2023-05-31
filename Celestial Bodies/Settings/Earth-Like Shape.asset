@@ -13,105 +13,135 @@ MonoBehaviour:
   m_Name: Earth-Like Shape
   m_EditorClassIdentifier: 
   meshSizeIndex: 0
-  levelOfDetail: 1
-  radius: 20
-  noiseLayers:
+  levelOfDetail: 2
+  radius: 10000
+  filterLayers:
   - enabled: 1
     useFirstLayerAsMask: 0
-    noiseSettings:
+    filterSettings:
       filterType: 0
       simplexNoiseSettings:
         seed: {x: 0, y: 0, z: 0}
-        strength: 0.05
+        strength: 0.02
+        scale: {x: 1, y: 1, z: 1}
         layers: 6
-        baseRoughness: 1.2
+        baseRoughness: 1
         roughness: 2
         persistence: 0.5
         minValue: 1
       ridgeNoiseSettings:
         seed: {x: 0, y: 0, z: 0}
-        strength: 1
-        layers: 1
-        baseRoughness: 1
-        roughness: 2
-        persistence: 0.5
+        strength: 0
+        scale: {x: 0, y: 0, z: 0}
+        layers: 0
+        baseRoughness: 0
+        roughness: 0
+        persistence: 0
         minValue: 0
-        weightMultiplier: 1
+        weightMultiplier: 0
       perlinNoiseSettings:
-        seed: {x: 2.9253926e+38, y: 2.38998e+38, z: 9.390275e+37}
-        strength: 1
-        layers: 1
-        baseRoughness: 1
-        roughness: 2
-        persistence: 0.5
+        seed: {x: 0, y: 0, z: 0}
+        strength: 0
+        scale: {x: 0, y: 0, z: 0}
+        layers: 0
+        baseRoughness: 0
+        roughness: 0
+        persistence: 0
         minValue: 0
-        scale: 1
       craterSettings:
         seed: {x: 0, y: 0, z: 0}
-        strength: 1
+        strength: 0
+        scale: {x: 0, y: 0, z: 0}
+        craters: 0
+        minCraterRadius: 0
+        maxCraterRadius: 1
+        craterFloor: 0
+        sizeDistribution: 0
+        ridgeHeight: 0
+        ridgeWidth: 2
   - enabled: 1
     useFirstLayerAsMask: 1
-    noiseSettings:
+    filterSettings:
       filterType: 0
       simplexNoiseSettings:
         seed: {x: 0, y: 0, z: 0}
         strength: 2
+        scale: {x: 1, y: 1, z: 1}
         layers: 6
         baseRoughness: 1
-        roughness: 2.5
+        roughness: 2
         persistence: 0.5
         minValue: 1
       ridgeNoiseSettings:
         seed: {x: 0, y: 0, z: 0}
-        strength: 1
-        layers: 1
-        baseRoughness: 1
-        roughness: 2
-        persistence: 0.5
+        strength: 0
+        scale: {x: 0, y: 0, z: 0}
+        layers: 0
+        baseRoughness: 0
+        roughness: 0
+        persistence: 0
         minValue: 0
-        weightMultiplier: 1
+        weightMultiplier: 0
       perlinNoiseSettings:
-        seed: {x: -7.9776994e+37, y: 1.099966e+38, z: -2.891779e+38}
-        strength: 1
-        layers: 1
-        baseRoughness: 1
-        roughness: 2
-        persistence: 0.5
+        seed: {x: 0, y: 0, z: 0}
+        strength: 0
+        scale: {x: 0, y: 0, z: 0}
+        layers: 0
+        baseRoughness: 0
+        roughness: 0
+        persistence: 0
         minValue: 0
-        scale: 1
       craterSettings:
         seed: {x: 0, y: 0, z: 0}
-        strength: 1
+        strength: 0
+        scale: {x: 0, y: 0, z: 0}
+        craters: 0
+        minCraterRadius: 0
+        maxCraterRadius: 1
+        craterFloor: 0
+        sizeDistribution: 0
+        ridgeHeight: 0
+        ridgeWidth: 2
   - enabled: 1
     useFirstLayerAsMask: 1
-    noiseSettings:
+    filterSettings:
       filterType: 1
       simplexNoiseSettings:
         seed: {x: 0, y: 0, z: 0}
-        strength: 1
-        layers: 1
-        baseRoughness: 1
-        roughness: 2
-        persistence: 0.5
+        strength: 0
+        scale: {x: 0, y: 0, z: 0}
+        layers: 0
+        baseRoughness: 0
+        roughness: 0
+        persistence: 0
         minValue: 0
       ridgeNoiseSettings:
         seed: {x: 0, y: 0, z: 0}
         strength: 2
+        scale: {x: 1, y: 1, z: 1}
         layers: 6
-        baseRoughness: 2
-        roughness: 2
+        baseRoughness: 3
+        roughness: 3
         persistence: 0.5
         minValue: 1
-        weightMultiplier: 1.25
+        weightMultiplier: 1
       perlinNoiseSettings:
-        seed: {x: -2.1943229e+38, y: -1.5635145e+38, z: -1.7362098e+38}
-        strength: 1
-        layers: 1
-        baseRoughness: 1
-        roughness: 2
-        persistence: 0.5
+        seed: {x: 0, y: 0, z: 0}
+        strength: 0
+        scale: {x: 0, y: 0, z: 0}
+        layers: 0
+        baseRoughness: 0
+        roughness: 0
+        persistence: 0
         minValue: 0
-        scale: 1
       craterSettings:
         seed: {x: 0, y: 0, z: 0}
-        strength: 1
+        strength: 0
+        scale: {x: 0, y: 0, z: 0}
+        craters: 0
+        minCraterRadius: 0
+        maxCraterRadius: 1
+        craterFloor: 0
+        sizeDistribution: 0
+        ridgeHeight: 0
+        ridgeWidth: 2

@@ -5,17 +5,16 @@ using UnityEngine;
 [CreateAssetMenu()]
 public class ColorSettings : ScriptableObject
 {
-    public Shader shader;
-    [HideInInspector] public Material bodyMaterial;
+    public Material material;
     public BiomeColorSettings biomeColorSettings;
 
     [System.Serializable]
     public class BiomeColorSettings
     {
         public Biome[] biomes;
-        public FilterSettings noise;
-        public float noiseOffset;
-        public float noiseStrength;
+        public FilterSettings filter;
+        public float offset;
+        public float strength;
         [Range(0, 1)] public float blend;
 
         [System.Serializable]
@@ -23,7 +22,8 @@ public class ColorSettings : ScriptableObject
         {
             public Gradient gradient;
             public Color tint;
-            [Range(0, 1)] public float startHeight;
+            public bool colorWithMinMax = true; 
+            [ConditionalHide("colorWithMinMax"), Range(0, 1)] public float startHeight;
             [Range(0, 1)] public float tintPercent;
             public float weightMultiplier = 1;
         }

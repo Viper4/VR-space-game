@@ -7,6 +7,7 @@ public class ShipControl : MonoBehaviour
 {
     [SerializeField] ShipJoystick joystick;
     [SerializeField] ShipThrottle throttle;
+    [SerializeField] Switch[] shipSwitches;
     Rigidbody shipRigidbody;
     [SerializeField] float rotationForce = 1000;
     [HideInInspector] bool launchMode = false;
@@ -16,13 +17,15 @@ public class ShipControl : MonoBehaviour
     [SerializeField] Transform[] turretPoints;
     Turret[] turrets;
     bool turretControl = false;
-    bool flightAssist = false;
+    bool autoStabilizeRot = false;
+    bool autoStabilizePos = false;
 
     [SerializeField] Transform pilot;
     Camera pilotCam;
-    [SerializeField] GameObject hudUI;
-    [SerializeField] RectTransform hudArea;
+
     [SerializeField] Transform hudPivot;
+
+    [SerializeField] RectTransform turretControlUI;
     [SerializeField] GameObject turretCrosshairPrefab;
     [SerializeField] Image crosshair;
     [SerializeField] Color normalColor;
@@ -36,7 +39,7 @@ public class ShipControl : MonoBehaviour
     bool torpedoBayDoorOpen = false;
     [SerializeField] Animation bayDoorAnimation;
 
-    bool translationMode = false;
+    int translationMode = 1;
 
     [SerializeField]
     [Range(-1000, 1000)]
@@ -54,7 +57,7 @@ public class ShipControl : MonoBehaviour
         for (int i = 0; i < turretPoints.Length; i++)
         {
             turrets[i] = turretPoints[i].GetChild(0).GetComponent<Turret>();
-            Instantiate(turretCrosshairPrefab, hudArea);
+            Instantiate(turretCrosshairPrefab, turretControlUI);
         }
 
         xRotationPID = new PIDController(P, I, D);
@@ -69,9 +72,11 @@ public class ShipControl : MonoBehaviour
         joystick.JoystickTriggerUp += StopTurretFire;
         joystick.JoystickRelease += FireTorpedo;
         joystick.JoystickToggle += ToggleTurretControl;
-        joystick.JoystickPad += ToggleTranslationPad;
 
-        throttle.SwitchToggle += OnSwitchToggle;
+        foreach (Switch _switch in shipSwitches)
+        {
+            _switch.OnSwitchToggle += OnSwitchToggle;
+        }
     }
 
     private void OnDisable()
@@ -80,32 +85,42 @@ public class ShipControl : MonoBehaviour
         joystick.JoystickTriggerUp -= StopTurretFire;
         joystick.JoystickRelease -= FireTorpedo;
         joystick.JoystickToggle -= ToggleTurretControl;
-        joystick.JoystickPad -= ToggleTranslationPad;
 
-        throttle.SwitchToggle -= OnSwitchToggle;
+        foreach (Switch _switch in shipSwitches)
+        {
+            _switch.OnSwitchToggle -= OnSwitchToggle;
+        }
     }
 
     void Update()
     {
-        Vector3 rotateDirection = joystick.direction;
-        if (translationMode)
+        Vector3 joystickDirection = joystick.direction;
+        if(translationMode != 1)
         {
-            if (joystick.padPosition != Vector2.zero)
+            if (joystickDirection.x != 0 && joystickDirection.z != 0)
             {
-                rotateDirection = Vector3.zero;
-                shipRigidbody.AddRelativeForce(joystick.padPosition * translationForce, ForceMode.Acceleration);
+                switch (translationMode)
+                {
+                    case 0: // Vertical
+                        shipRigidbody.AddRelativeForce(new Vector3(-joystickDirection.z, -joystickDirection.x, 0) * translationForce, ForceMode.Acceleration);
+                        break;
+                    case 2: // Horizontal
+                        shipRigidbody.AddRelativeForce(new Vector3(-joystickDirection.z, 0, joystickDirection.x) * translationForce, ForceMode.Acceleration);
+                        break;
+                }
             }
-        }
-
-        if (!turretControl)
-        {
-            shipRigidbody.AddRelativeTorque(rotateDirection * rotationForce, ForceMode.Acceleration);
         }
         else
         {
-            hudPivot.SetPositionAndRotation(pilot.position, pilot.rotation);
-            hudPivot.localEulerAngles = new Vector3(hudPivot.localEulerAngles.x, hudPivot.localEulerAngles.y, 0);
-            crosshair.transform.localPosition = new Vector2(-joystick.direction.z * hudArea.rect.width * 0.5f, -joystick.direction.x * hudArea.rect.height * 0.5f);
+            if(!turretControl)
+                shipRigidbody.AddRelativeTorque(joystickDirection * rotationForce, ForceMode.Acceleration);
+        }
+
+        hudPivot.SetPositionAndRotation(pilot.position, pilot.rotation);
+        hudPivot.localEulerAngles = new Vector3(hudPivot.localEulerAngles.x, hudPivot.localEulerAngles.y, 0);
+        if (turretControl)
+        {
+            crosshair.transform.localPosition = new Vector2(-joystick.direction.z * turretControlUI.rect.width * 0.5f, -joystick.direction.x * turretControlUI.rect.height * 0.5f);
             Vector3 crosshairDirection = crosshair.transform.position - pilot.position;
 
             if (Physics.Raycast(crosshair.transform.position, crosshairDirection, out RaycastHit hit, Mathf.Infinity))
@@ -121,10 +136,10 @@ public class ShipControl : MonoBehaviour
                 {
                     Turret turret = turrets[i];
                     turret.targetDirection = hit.point - turret.firePoint.position;
-                    Transform turretCrosshair = hudArea.GetChild(i + 1);
+                    Transform turretCrosshair = turretControlUI.GetChild(i + 1);
                     Vector3 turretHitPoint = Physics.Raycast(turret.firePoint.position, turret.firePoint.forward, out RaycastHit turretHit, Mathf.Infinity) ? turretHit.point : turret.firePoint.position + turret.firePoint.forward * 500;
                     
-                    if (RectTransformUtility.ScreenPointToWorldPointInRectangle(hudArea, pilotCam.WorldToScreenPoint(turretHitPoint), pilotCam, out Vector3 turretCrosshairPos))
+                    if (RectTransformUtility.ScreenPointToWorldPointInRectangle(turretControlUI, pilotCam.WorldToScreenPoint(turretHitPoint), pilotCam, out Vector3 turretCrosshairPos))
                     {
                         turretCrosshair.position = turretCrosshairPos;
                     }
@@ -147,10 +162,10 @@ public class ShipControl : MonoBehaviour
                 {
                     Turret turret = turrets[i];
                     turret.targetDirection = crosshairDirection;
-                    Transform turretCrosshair = hudArea.GetChild(i + 1);
+                    Transform turretCrosshair = turretControlUI.GetChild(i + 1);
                     Vector3 turretAimPosition = turret.firePoint.position + turret.firePoint.forward * 500;
 
-                    if(RectTransformUtility.ScreenPointToWorldPointInRectangle(hudArea, pilotCam.WorldToScreenPoint(turretAimPosition), pilotCam, out Vector3 turretCrosshairPos))
+                    if(RectTransformUtility.ScreenPointToWorldPointInRectangle(turretControlUI, pilotCam.WorldToScreenPoint(turretAimPosition), pilotCam, out Vector3 turretCrosshairPos))
                     {
                         turretCrosshair.position = turretCrosshairPos;
                     }
@@ -168,23 +183,20 @@ public class ShipControl : MonoBehaviour
         Vector3 force = launchMode ? launchForce * throttle.value * Vector3.forward : cruiseForce * throttle.value * Vector3.forward;
         shipRigidbody.AddRelativeForce(force, ForceMode.Acceleration);
 
-        if (flightAssist)
+        if (autoStabilizeRot && (turretControl || joystickDirection == Vector3.zero))
         {
-            if(turretControl || rotateDirection == Vector3.zero)
-            {
-                float torqueCorrectionX = -xRotationPID.GetOutput(shipRigidbody.angularVelocity.x, Time.deltaTime);
-                float torqueCorrectionY = -yRotationPID.GetOutput(shipRigidbody.angularVelocity.y, Time.deltaTime);
-                float torqueCorrectionZ = -zRotationPID.GetOutput(shipRigidbody.angularVelocity.z, Time.deltaTime);
-                shipRigidbody.AddTorque(new Vector3(torqueCorrectionX, torqueCorrectionY, torqueCorrectionZ) * rotationForce, ForceMode.Acceleration);
-            }
-            if(joystick.padPosition == Vector2.zero)
-            {
-                Vector3 localVelocity = shipRigidbody.transform.InverseTransformDirection(shipRigidbody.velocity);
-                float forceCorrectionX = -xRotationPID.GetOutput(localVelocity.x, Time.deltaTime);
-                float forceCorrectionY = -yRotationPID.GetOutput(localVelocity.y, Time.deltaTime);
-                float forceCorrectionZ = -zRotationPID.GetOutput(localVelocity.z, Time.deltaTime);
-                shipRigidbody.AddRelativeForce(new Vector3(forceCorrectionX, forceCorrectionY, forceCorrectionZ) * translationForce, ForceMode.Acceleration);
-            }
+            float torqueCorrectionX = -xRotationPID.GetOutput(shipRigidbody.angularVelocity.x, Time.deltaTime);
+            float torqueCorrectionY = -yRotationPID.GetOutput(shipRigidbody.angularVelocity.y, Time.deltaTime);
+            float torqueCorrectionZ = -zRotationPID.GetOutput(shipRigidbody.angularVelocity.z, Time.deltaTime);
+            shipRigidbody.AddTorque(new Vector3(torqueCorrectionX, torqueCorrectionY, torqueCorrectionZ) * rotationForce, ForceMode.Acceleration);
+        }
+        if (autoStabilizePos && throttle.value == 0 && joystickDirection == Vector3.zero)
+        {
+            Vector3 localVelocity = shipRigidbody.transform.InverseTransformDirection(shipRigidbody.velocity);
+            float forceCorrectionX = -xRotationPID.GetOutput(localVelocity.x, Time.deltaTime);
+            float forceCorrectionY = -yRotationPID.GetOutput(localVelocity.y, Time.deltaTime);
+            float forceCorrectionZ = -zRotationPID.GetOutput(localVelocity.z, Time.deltaTime);
+            shipRigidbody.AddRelativeForce(new Vector3(forceCorrectionX, forceCorrectionY, forceCorrectionZ) * translationForce, ForceMode.Acceleration);
         }
     }
 
@@ -236,16 +248,11 @@ public class ShipControl : MonoBehaviour
     private void ToggleTurretControl()
     {
         turretControl = !turretControl;
-        hudUI.SetActive(turretControl);
+        turretControlUI.gameObject.SetActive(turretControl);
         for (int i = 0; i < turrets.Length; i++)
         {
             turrets[i].manual = turretControl;
         }
-    }
-
-    private void ToggleTranslationPad()
-    {
-        translationMode = !translationMode;
     }
 
     private void OnSwitchToggle(int index, int state)
@@ -267,8 +274,17 @@ public class ShipControl : MonoBehaviour
                     bayDoorAnimation.Play("OpenTorpedoBay");
                 }
                 break;
-            case 2: // Flight assist
-                flightAssist = state == 1;
+            case 2: // Stabilize Rot
+                autoStabilizeRot = state == 1;
+                break;
+            case 3: // Stabilize Pos
+                autoStabilizePos = state == 1;
+                break;
+            case 4: // Constant Speed
+
+                break;
+            case 5: // Translation Control
+                translationMode = state;
                 break;
         }
     }

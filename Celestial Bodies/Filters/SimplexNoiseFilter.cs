@@ -14,6 +14,7 @@ public class SimplexNoiseFilter : IFilter
 
     public float Evaluate(Vector3 point)
     {
+        point = new Vector3(point.x * settings.scale.x, point.y * settings.scale.y, point.z * settings.scale.z);
         float noiseValue = 0;
         float frequency = settings.baseRoughness;
         float amplitude = 1;

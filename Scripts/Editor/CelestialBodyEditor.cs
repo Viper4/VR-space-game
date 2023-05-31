@@ -3,65 +3,37 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-[CustomEditor(typeof(CelestialBodyGenerator))]
+[CustomEditor(typeof(CelestialBody))]
 public class CelestialBodyEditor : Editor
 {
-    CelestialBodyGenerator celestialBody;
-    Editor shapeEditor;
-    Editor colorEditor;
+    CelestialBody celestialBody;
+    Editor generationEditor;
+    Editor gravityEditor;
 
     public override void OnInspectorGUI()
     {
-        using (var check = new EditorGUI.ChangeCheckScope())
-        {
-            base.OnInspectorGUI();
+        base.OnInspectorGUI();
 
-            if (check.changed)
-            {
-                celestialBody.GenerateCelestialBody();
-            }
-        }
-
-        if(GUILayout.Button("Generate"))
-        {
-            celestialBody.GenerateCelestialBody();
-        }
-
-        if (GUILayout.Button("Generate Random"))
-        {
-            celestialBody.GenerateRandomCelestialBody();
-        }
-
-        DrawSettingsEditor(celestialBody.shapeSettings, celestialBody.OnShapeSettingsUpdated, ref celestialBody.shapeSettingsFoldout, ref shapeEditor);
-        DrawSettingsEditor(celestialBody.colorSettings, celestialBody.OnColorSettingsUpdated, ref celestialBody.colorSettingsFoldout, ref colorEditor);
+        DrawSettingsEditor(celestialBody.generationSettings, ref celestialBody.generationSettingsFoldout, ref generationEditor);
+        if(celestialBody.gravity)
+            DrawSettingsEditor(celestialBody.gravitySettings, ref celestialBody.gravitySettingsFoldout, ref gravityEditor);
     }
 
-    void DrawSettingsEditor(Object settings, System.Action onSettingsUpdated, ref bool foldout, ref Editor editor)
+    void DrawSettingsEditor(Object settings, ref bool foldout, ref Editor editor)
     {
-        if(settings != null)
+        if (settings != null)
         {
             foldout = EditorGUILayout.InspectorTitlebar(foldout, settings);
-            using (var check = new EditorGUI.ChangeCheckScope())
+            if (foldout)
             {
-                if (foldout)
-                {
-                    CreateCachedEditor(settings, null, ref editor);
-                    editor.OnInspectorGUI();
-
-                    if (check.changed)
-                    {
-                        if (onSettingsUpdated != null)
-                        {
-                            onSettingsUpdated();
-                        }
-                    }
-                }
+                CreateCachedEditor(settings, null, ref editor);
+                editor.OnInspectorGUI();
             }
         }
     }
 
     private void OnEnable()
     {
-        celestialBody = (CelestialBodyGenerator)target;
+        celestialBody = (CelestialBody)target;
     }
 }

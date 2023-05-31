@@ -22,17 +22,16 @@ public class TerrainFace
         this.filterMesh = filterMesh;
         this.colliderMesh = colliderMesh;
         this.filterResolution = ShapeSettings.supportedMeshSizes[settings.meshSizeIndex];
-        this.colliderResolution = settings.meshSizeIndex > 1 ? ShapeSettings.supportedMeshSizes[settings.meshSizeIndex - 2] : ShapeSettings.supportedMeshSizes[settings.meshSizeIndex];
+        this.colliderResolution = settings.complexMeshCollider ? ShapeSettings.supportedMeshSizes[settings.meshColliderSizeIndex] : ShapeSettings.simpleMeshColliderSize;
         this.row = row;
         this.col = col;
         numMeshesPerSide = settings.levelOfDetail;
         this.localUp = localUp;
-
         localRight = new Vector3(localUp.y, localUp.z, localUp.x);
         localForward = Vector3.Cross(localUp, localRight);
     }
 
-    private Vector3 GetPointOnUnitSphere(Vector3 origin, Vector3 percent)
+    public Vector3 GetPointOnCubeSphere(Vector3 origin, Vector3 percent)
     {
         Vector3 pointOnUnitCube = origin + (2 * percent.x / numMeshesPerSide * localRight + 2 * percent.y / numMeshesPerSide * localForward);
         float x2 = pointOnUnitCube.x * pointOnUnitCube.x;
@@ -52,6 +51,7 @@ public class TerrainFace
         int filterTriangleIndex = 0;
         Vector2[] uv = filterMesh.uv;
 
+
         Vector3[] colliderVertices = new Vector3[colliderResolution * colliderResolution];
         int[] colliderTriangles = new int[(colliderResolution - 1) * (colliderResolution - 1) * 6];
         int colliderTriangleIndex = 0;
@@ -63,7 +63,7 @@ public class TerrainFace
         {
             for (int x = 0; x < filterResolution; x++)
             {
-                filterVertices[i] = shapeGenerator.CalculatePointOnSphere(GetPointOnUnitSphere(startVertex, new Vector2(x, y) / (filterResolution - 1)));
+                filterVertices[i] = shapeGenerator.CalculatePointOnSphere(GetPointOnCubeSphere(startVertex, new Vector2(x, y) / (filterResolution - 1)));
 
                 if (x != filterResolution - 1 && y != filterResolution - 1)
                 {
@@ -77,22 +77,25 @@ public class TerrainFace
                     filterTriangleIndex += 6;
                 }
 
-                if(y < colliderResolution && x < colliderResolution)
+                if (colliderMesh != null)
                 {
-                    colliderVertices[j] = shapeGenerator.CalculatePointOnSphere(GetPointOnUnitSphere(startVertex, new Vector2(x, y) / (colliderResolution - 1)));
-
-                    if (x != colliderResolution - 1 && y != colliderResolution - 1)
+                    if (y < colliderResolution && x < colliderResolution)
                     {
-                        colliderTriangles[colliderTriangleIndex] = j;
-                        colliderTriangles[colliderTriangleIndex + 1] = j + colliderResolution + 1;
-                        colliderTriangles[colliderTriangleIndex + 2] = j + colliderResolution;
+                        colliderVertices[j] = shapeGenerator.CalculatePointOnSphere(GetPointOnCubeSphere(startVertex, new Vector2(x, y) / (colliderResolution - 1)));
 
-                        colliderTriangles[colliderTriangleIndex + 3] = j;
-                        colliderTriangles[colliderTriangleIndex + 4] = j + 1;
-                        colliderTriangles[colliderTriangleIndex + 5] = j + colliderResolution + 1;
-                        colliderTriangleIndex += 6;
+                        if (x != colliderResolution - 1 && y != colliderResolution - 1)
+                        {
+                            colliderTriangles[colliderTriangleIndex] = j;
+                            colliderTriangles[colliderTriangleIndex + 1] = j + colliderResolution + 1;
+                            colliderTriangles[colliderTriangleIndex + 2] = j + colliderResolution;
+
+                            colliderTriangles[colliderTriangleIndex + 3] = j;
+                            colliderTriangles[colliderTriangleIndex + 4] = j + 1;
+                            colliderTriangles[colliderTriangleIndex + 5] = j + colliderResolution + 1;
+                            colliderTriangleIndex += 6;
+                        }
+                        j++;
                     }
-                    j++;
                 }
                 i++;
             }
@@ -105,10 +108,13 @@ public class TerrainFace
         if(filterMesh.uv.Length == uv.Length)
             filterMesh.uv = uv;
 
-        colliderMesh.Clear();
-        colliderMesh.vertices = colliderVertices;
-        colliderMesh.triangles = colliderTriangles;
-        colliderMesh.RecalculateNormals();
+        if(colliderMesh != null)
+        {
+            colliderMesh.Clear();
+            colliderMesh.vertices = colliderVertices;
+            colliderMesh.triangles = colliderTriangles;
+            colliderMesh.RecalculateNormals();
+        }
     }
 
     public void UpdateUVs(ColorGenerator colorGenerator)
@@ -121,7 +127,7 @@ public class TerrainFace
             for (int x = 0; x < filterResolution; x++)
             {
                 Vector2 percent = new Vector2(x, y) / (filterResolution - 1);
-                Vector3 pointOnUnitSphere = GetPointOnUnitSphere(startVertex, percent);
+                Vector3 pointOnUnitSphere = GetPointOnCubeSphere(startVertex, percent);
 
                 uv[i] = new Vector2(colorGenerator.BiomePercentFromPoint(pointOnUnitSphere), 0);
 

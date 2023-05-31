@@ -47,10 +47,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e09938fc50d6944a93e317132424199, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  autoUpdate: 1
+  autoUpdate: 0
   renderMask: 0
   shapeSettings: {fileID: 11400000, guid: 05ebb921e37ee63499e8c01a08f4d206, type: 2}
   colorSettings: {fileID: 11400000, guid: f2b9bb77ef1c3bb4ca2567ab425a8e82, type: 2}
+  cloneSettings: 0
   shapeSettingsFoldout: 1
   colorSettingsFoldout: 1
   meshFilters:
@@ -60,8 +61,26 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   seedRange: {x: -9999, y: 9999}
-  cloneSettings: 0
+  generateMeshColliders: 1
 --- !u!114 &6135734291481996254
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -74,14 +93,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7ecefe1d978853f4f91e593a040236b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  autoGenerate: 1
-  surfaceGravity: 9.807
-  gravityField: 10000
-  affectedLayers:
-    serializedVersion: 2
-    m_Bits: 3473
-  autoOrient: 1
-  autoOrientSpeed: 5
+  generationSettingsFoldout: 0
+  generationSettings: {fileID: 11400000, guid: d28357b12ca4a68499ed2dcf701b85e9, type: 2}
+  gravity: 1
+  gravitySettingsFoldout: 0
+  gravitySettings: {fileID: 11400000, guid: fdf0ca84f16763142aaa2bf5de91eff5, type: 2}
 --- !u!54 &7669569056236028977
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -128,5 +144,5 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 21.5
+  m_Radius: 10600
   m_Center: {x: 0, y: 0, z: 0}

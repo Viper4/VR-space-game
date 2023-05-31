@@ -1736,11 +1736,12 @@ MonoBehaviour:
   toggleAction:
     actionPath: /actions/default/in/GrabPinch
     needsReinit: 0
-  highlight: {fileID: 2502830296644743284}
   eulerStates:
   - {x: 0, y: 0, z: 0}
   - {x: -90, y: 0, z: 0}
   - {x: 180, y: 0, z: 0}
+  indicator: {fileID: 0}
+  indicatorColors: []
   index: 0
 --- !u!1 &6689513432914368164
 GameObject:

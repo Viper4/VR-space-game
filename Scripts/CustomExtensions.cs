@@ -1,7 +1,15 @@
+using System;
 using UnityEngine;
 
 public static class CustomExtensions
 {
+    private const double lightYear = 9.46073e15;
+    private const double centi = 1e-2;
+    private const double kilo = 1e3;
+    private const double mega = 1e6;
+    private const double giga = 1e9;
+    private const double tera = 1e12;
+
     public static bool HasTag(this Transform transform, string tag)
     {
         if (transform.CompareTag(tag))
@@ -89,16 +97,35 @@ public static class CustomExtensions
         return returnVector;
     }
 
-    public static float SqrDistance(Vector3 a, Vector3 b)
-    {
-        float distanceX = a.x - b.x;
-        float distanceY = a.y - b.y;
-        float distanceZ = a.z - b.z;
-        return distanceX * distanceX + distanceY * distanceY + distanceZ * distanceZ;
-    }
-
     public static float normalize(float value, float min, float max)
     {
         return (value - min) / (max - min);
+    }
+
+    // Assuming distance is in meters
+    public static string DistanceToFormattedString(double distance, int decimals = 0)
+    {
+        double decimalOffset = Math.Pow(10, decimals);
+        if (distance >= tera)
+        {
+            return (Math.Round(distance / tera * decimalOffset) / decimalOffset).ToString() + "Tm";
+        }
+        else if (distance >= giga)
+        {
+            return (Math.Round(distance / giga * decimalOffset) / decimalOffset).ToString() + "Gm";
+        }
+        else if (distance >= mega)
+        {
+            return (Math.Round(distance / mega * decimalOffset) / decimalOffset).ToString() + "Mm";
+        }
+        else if (distance >= kilo)
+        {
+            return (Math.Round(distance / kilo * decimalOffset) / decimalOffset).ToString() + "km";
+        }
+        else if (distance <= centi)
+        {
+            return (Math.Round(distance / tera * decimalOffset) / decimalOffset).ToString() + "cm";
+        }
+        return (Math.Round(distance * decimalOffset) / decimalOffset).ToString() + "m";
     }
 }

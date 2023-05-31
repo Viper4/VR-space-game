@@ -2,12 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Valve.VR;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class PauseUI : MonoBehaviour
 {
     VRControl control;
+    [SerializeField] Camera UICamera;
+    [SerializeField] LayerMask pausedCullingMask;
+    [SerializeField] LayerMask normalCullingMask;
     [SerializeField] Transform head;
     [SerializeField] GameObject pauseMenu;
     [SerializeField] SteamVR_Action_Boolean pauseAction = null;
@@ -32,20 +34,27 @@ public class PauseUI : MonoBehaviour
             }
             else
             {
-                control.Paused = true;
-                pauseMenu.transform.position = head.position + head.forward;
-                pauseMenu.transform.rotation = head.rotation;
-                pauseMenu.SetActive(true);
-                animator.SetTrigger("PauseIn");
-                settings = false;
+                Pause();
             }
         }
     }
 
     public void Resume()
     {
+        UICamera.cullingMask = normalCullingMask;
         control.Paused = false;
         pauseMenu.SetActive(false);
+    }
+
+    public void Pause()
+    {
+        UICamera.cullingMask = pausedCullingMask;
+        control.Paused = true;
+        pauseMenu.transform.position = head.position + head.forward;
+        pauseMenu.transform.rotation = head.rotation;
+        pauseMenu.SetActive(true);
+        animator.SetTrigger("PauseIn");
+        settings = false;
     }
 
     public void Settings()

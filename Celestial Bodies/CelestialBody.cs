@@ -4,41 +4,63 @@ using UnityEngine;
 
 public class CelestialBody : MonoBehaviour
 {
-    //private const float G = 6.6743e-11f;
+    private const float v = 4 / 3 * Mathf.PI;
 
     CelestialBodyGenerator generator;
-    [SerializeField] bool autoGenerate = true;
+    Rigidbody _rigidbody;
 
-    [SerializeField] float surfaceGravity = 9.807f;
-    [SerializeField] float gravityField = 5000;
+    [HideInInspector] public bool generationSettingsFoldout;
+    public GenerationSettings generationSettings;
+
+    public bool gravity = true;
+    [HideInInspector] public bool gravitySettingsFoldout;
+    [ConditionalHide("gravity")] public GravitySettings gravitySettings;
     float gravityRadius;
-    [SerializeField] LayerMask affectedLayers;
-
-    [SerializeField] bool autoOrient = true;
-    [SerializeField] float autoOrientSpeed = 5;
-    [SerializeField] SphereCollider autoOrientField;
+    SphereCollider autoOrientField;
 
     private void Start()
     {
         generator = GetComponent<CelestialBodyGenerator>();
-        if (autoGenerate)
-            generator.GenerateCelestialBody();
-        gravityRadius = generator.shapeSettings.radius + gravityField;
+        float radius = Random.Range(generationSettings.radiusRange.x, generationSettings.radiusRange.y);
+        if (generationSettings.autoGenerate)
+        {
+            if (generationSettings.random)
+                generator.GenerateRandomCelestialBody(radius);
+            else
+                generator.GenerateCelestialBody(radius);
+        }
+        autoOrientField = GetComponent<SphereCollider>();
+        if (gravity)
+            gravityRadius = generator.shapeSettings.radius + gravitySettings.gravityField;
+        if(TryGetComponent(out _rigidbody) && generationSettings.calculateMass)
+        {
+            _rigidbody.mass = generationSettings.density * v * radius * radius * radius;
+        }
     }
 
     private void FixedUpdate()
     {
-        Collider[] collidersInGravity = Physics.OverlapSphere(transform.position, gravityRadius, affectedLayers, QueryTriggerInteraction.Ignore);
-        foreach(Collider collider in collidersInGravity)
+        if (gravity)
         {
-            if (collider.transform != transform && collider.TryGetComponent<Rigidbody>(out var rigidbody) && !rigidbody.isKinematic)
+            Collider[] collidersInGravity = Physics.OverlapSphere(transform.position, gravityRadius, gravitySettings.affectedLayers, QueryTriggerInteraction.Ignore);
+            foreach (Collider collider in collidersInGravity)
             {
-                Vector3 gravityDirection = (transform.position - collider.transform.position).normalized;
-                float gravityAcceleration = surfaceGravity * generator.shapeSettings.radius * generator.shapeSettings.radius / CustomExtensions.SqrDistance(transform.position, collider.transform.position);
-                rigidbody.AddForce(gravityDirection * gravityAcceleration, ForceMode.Acceleration);
-                if(collider.transform.HasTag("AutoOrient") && autoOrientField.bounds.Contains(collider.transform.position))
+                if (collider.transform != transform)
                 {
-                    collider.transform.rotation = Quaternion.Slerp(collider.transform.rotation, Quaternion.FromToRotation(-collider.transform.up, gravityDirection) * collider.transform.rotation, autoOrientSpeed * Time.deltaTime);
+                    if (collider.transform.HasTag("MainCamera"))
+                    {
+                        generator.CalculateLODs(collider.GetComponent<Camera>());
+                    }
+                    if (collider.TryGetComponent<Rigidbody>(out var rigidbody) && !rigidbody.isKinematic)
+                    {
+                        Vector3 gravityDirection = (transform.position - collider.transform.position).normalized;
+                        float gravityAcceleration = gravitySettings.surfaceGravity * generator.shapeSettings.radius * generator.shapeSettings.radius / (transform.position - collider.transform.position).sqrMagnitude;
+                        rigidbody.AddForce(gravityDirection * gravityAcceleration, ForceMode.Acceleration);
+                        if (gravitySettings.autoOrient && collider.transform.HasTag("AutoOrient") && autoOrientField.bounds.Contains(collider.transform.position))
+                        {
+                            collider.transform.rotation = Quaternion.Slerp(collider.transform.rotation, Quaternion.FromToRotation(-collider.transform.up, gravityDirection) * collider.transform.rotation, gravitySettings.autoOrientSpeed * Time.deltaTime);
+                        }
+                    }
                 }
             }
         }
