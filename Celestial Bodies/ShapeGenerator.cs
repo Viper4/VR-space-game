@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class ShapeGenerator
 {
-    ShapeSettings settings;
+    public ShapeSettings settings { get; private set; }
     IFilter[] filters;
     public MinMax elevationMinMax;
 

@@ -46,22 +46,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e09938fc50d6944a93e317132424199, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  targetCamera: {fileID: 0}
   autoUpdate: 0
   renderMask: 0
   shapeSettings: {fileID: 11400000, guid: 5fceda1b8eaf5f0419e87e1d1b3c669d, type: 2}
   colorSettings: {fileID: 11400000, guid: 46444cfcd02076f4d916d52c7119d0c2, type: 2}
-  cloneSettings: 0
+  cloneSettings: 1
   shapeSettingsFoldout: 1
   colorSettingsFoldout: 1
-  meshFilters:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
   seedRange: {x: -999, y: 999}
-  generateMeshColliders: 1
+  forceGenerateMeshColliders: 1
 --- !u!114 &1673852074928851070
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -74,7 +68,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7ecefe1d978853f4f91e593a040236b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  autoGenerate: 1
+  generationSettingsFoldout: 0
+  generationSettings: {fileID: 11400000, guid: 0be72f32df323dc4fb7839601af70aec, type: 2}
   gravity: 0
   gravitySettingsFoldout: 1
   gravitySettings: {fileID: 11400000, guid: fdf0ca84f16763142aaa2bf5de91eff5, type: 2}

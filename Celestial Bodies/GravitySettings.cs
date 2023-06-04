@@ -5,8 +5,8 @@ using UnityEngine;
 [CreateAssetMenu()]
 public class GravitySettings : ScriptableObject
 {
-    public float surfaceGravity = 9.807f;
-    public float gravityField = 5000;
+    public Vector2 surfaceGravityRange = new Vector2(9.807f, 9.807f);
+    public float gravityRadiusMultiplier = 2; // Multiplied by radius
     public LayerMask affectedLayers;
     public bool autoOrient = true;
     public float autoOrientSpeed = 5;

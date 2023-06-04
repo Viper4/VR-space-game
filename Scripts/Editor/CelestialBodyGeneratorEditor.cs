@@ -16,7 +16,7 @@ public class CelestialBodyGeneratorEditor : Editor
         {
             base.OnInspectorGUI();
 
-            if (check.changed)
+            if (celestialBody.autoUpdate && check.changed)
             {
                 celestialBody.GenerateCelestialBody();
             }
@@ -30,6 +30,11 @@ public class CelestialBodyGeneratorEditor : Editor
         if (GUILayout.Button("Generate Random"))
         {
             celestialBody.GenerateRandomCelestialBody();
+        }
+
+        if(GUILayout.Button("Generate Quad Trees"))
+        {
+            celestialBody.GenerateQuadTrees();
         }
 
         DrawSettingsEditor(celestialBody.shapeSettings, celestialBody.OnShapeSettingsUpdated, ref celestialBody.shapeSettingsFoldout, ref shapeEditor);

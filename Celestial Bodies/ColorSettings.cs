@@ -6,6 +6,8 @@ using UnityEngine;
 public class ColorSettings : ScriptableObject
 {
     public Material material;
+    //public Gradient randomColorGradient;
+    //public FilterSettings randomColorFilter;
     public BiomeColorSettings biomeColorSettings;
 
     [System.Serializable]

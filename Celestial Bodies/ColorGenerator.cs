@@ -4,9 +4,9 @@ using UnityEngine;
 
 public class ColorGenerator
 {
-    ColorSettings settings;
+    public ColorSettings settings { get; private set; }
     Texture2D texture;
-    Material materialInstance;
+    public Material materialInstance;
     const int textureResolution = 50;
     IFilter biomeFilter;
 
@@ -23,7 +23,7 @@ public class ColorGenerator
 
     public void UpdateElevation(MinMax elevationMinMax)
     {
-        materialInstance.SetVector("_elevationMinMax", new Vector4(elevationMinMax.Min, elevationMinMax.Max));
+        materialInstance.SetVector("_ElevationMinMax", new Vector4(elevationMinMax.Min, elevationMinMax.Max));
     }
 
     // At biomes >= 4 the colors of the biomes are "foggy" at low blend values
@@ -62,6 +62,6 @@ public class ColorGenerator
 
         texture.SetPixels(colors);
         texture.Apply();
-        materialInstance.SetTexture("_mainTexture", texture);
+        materialInstance.SetTexture("_MainTexture", texture);
     }
 }

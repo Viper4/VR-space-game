@@ -1328,10 +1328,10 @@
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": -471.3332824707031,
-            "y": 131.99996948242188,
-            "width": 129.33328247070313,
-            "height": 102.66668701171875
+            "x": -487.3333435058594,
+            "y": 144.0,
+            "width": 129.33334350585938,
+            "height": 102.66671752929688
         }
     },
     "m_Slots": [
@@ -1450,7 +1450,7 @@
     "m_DefaultRefNameVersion": 1,
     "m_RefNameGeneratedByDisplayName": "Main Texture",
     "m_DefaultReferenceName": "_Main_Texture",
-    "m_OverrideReferenceName": "_mainTexture",
+    "m_OverrideReferenceName": "_MainTexture",
     "m_GeneratePropertyBlock": true,
     "m_UseCustomSlotLabel": false,
     "m_CustomSlotLabel": "",
@@ -1615,7 +1615,7 @@
     "m_DefaultRefNameVersion": 1,
     "m_RefNameGeneratedByDisplayName": "Elevation Min Max",
     "m_DefaultReferenceName": "_Elevation_Min_Max",
-    "m_OverrideReferenceName": "_elevationMinMax",
+    "m_OverrideReferenceName": "_ElevationMinMax",
     "m_GeneratePropertyBlock": true,
     "m_UseCustomSlotLabel": false,
     "m_CustomSlotLabel": "",

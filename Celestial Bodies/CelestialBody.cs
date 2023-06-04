@@ -16,23 +16,37 @@ public class CelestialBody : MonoBehaviour
     [HideInInspector] public bool gravitySettingsFoldout;
     [ConditionalHide("gravity")] public GravitySettings gravitySettings;
     float gravityRadius;
-    SphereCollider autoOrientField;
+    float surfaceGravity;
+    SphereCollider sphereField;
+    float sqrFieldRadius;
 
     private void Start()
     {
-        generator = GetComponent<CelestialBodyGenerator>();
-        float radius = Random.Range(generationSettings.radiusRange.x, generationSettings.radiusRange.y);
-        if (generationSettings.autoGenerate)
+        float radius = generationSettings.random ? Random.Range(generationSettings.radiusRange.x, generationSettings.radiusRange.y) : generator.shapeSettings.radius;
+        if (TryGetComponent(out generator))
         {
-            if (generationSettings.random)
-                generator.GenerateRandomCelestialBody(radius);
-            else
-                generator.GenerateCelestialBody(radius);
+            if (generationSettings.autoGenerate)
+            {
+                if (generationSettings.random)
+                    generator.GenerateRandomCelestialBody(radius);
+                else
+                    generator.GenerateCelestialBody(radius);
+            }
         }
-        autoOrientField = GetComponent<SphereCollider>();
+        else
+        {
+            transform.localScale = new Vector3(radius, radius, radius);
+        }
+        surfaceGravity = Random.Range(gravitySettings.surfaceGravityRange.x, gravitySettings.surfaceGravityRange.y);
+
+        if (TryGetComponent(out sphereField))
+        {
+            sphereField.radius = radius + generationSettings.sphereField;
+            sqrFieldRadius = radius * radius;
+        }
         if (gravity)
-            gravityRadius = generator.shapeSettings.radius + gravitySettings.gravityField;
-        if(TryGetComponent(out _rigidbody) && generationSettings.calculateMass)
+            gravityRadius = radius * gravitySettings.gravityRadiusMultiplier;
+        if (TryGetComponent(out _rigidbody) && generationSettings.calculateMass)
         {
             _rigidbody.mass = generationSettings.density * v * radius * radius * radius;
         }
@@ -42,23 +56,26 @@ public class CelestialBody : MonoBehaviour
     {
         if (gravity)
         {
-            Collider[] collidersInGravity = Physics.OverlapSphere(transform.position, gravityRadius, gravitySettings.affectedLayers, QueryTriggerInteraction.Ignore);
-            foreach (Collider collider in collidersInGravity)
+            // NonAlloc generates no garbage, research this more since we could go past 50000 colliders and might want to use OverlapSphere
+            Collider[] collidersInGravity = new Collider[50000];
+            int numColliders = Physics.OverlapSphereNonAlloc(transform.position, gravityRadius, collidersInGravity, gravitySettings.affectedLayers);
+            for (int i = 0; i < numColliders; i++)
             {
-                if (collider.transform != transform)
+                Transform transformInGravity = collidersInGravity[i].transform;
+                if (transformInGravity != transform)
                 {
-                    if (collider.transform.HasTag("MainCamera"))
+                    if (transformInGravity.HasTag("AutoOrient"))
                     {
-                        generator.CalculateLODs(collider.GetComponent<Camera>());
+                        generator.GenerateQuadTrees(transformInGravity.GetComponent<Camera>());
                     }
-                    if (collider.TryGetComponent<Rigidbody>(out var rigidbody) && !rigidbody.isKinematic)
+                    if (transformInGravity.TryGetComponent<Rigidbody>(out var rigidbody) && !rigidbody.isKinematic)
                     {
-                        Vector3 gravityDirection = (transform.position - collider.transform.position).normalized;
-                        float gravityAcceleration = gravitySettings.surfaceGravity * generator.shapeSettings.radius * generator.shapeSettings.radius / (transform.position - collider.transform.position).sqrMagnitude;
+                        Vector3 gravityDirection = (transform.position - transformInGravity.position).normalized;
+                        float gravityAcceleration = surfaceGravity * generator.shapeSettings.radius * generator.shapeSettings.radius / (transform.position - transformInGravity.position).sqrMagnitude;
                         rigidbody.AddForce(gravityDirection * gravityAcceleration, ForceMode.Acceleration);
-                        if (gravitySettings.autoOrient && collider.transform.HasTag("AutoOrient") && autoOrientField.bounds.Contains(collider.transform.position))
+                        if (gravitySettings.autoOrient && transformInGravity.HasTag("AutoOrient") && (transformInGravity.position - transform.position).sqrMagnitude < sqrFieldRadius)
                         {
-                            collider.transform.rotation = Quaternion.Slerp(collider.transform.rotation, Quaternion.FromToRotation(-collider.transform.up, gravityDirection) * collider.transform.rotation, gravitySettings.autoOrientSpeed * Time.deltaTime);
+                            transformInGravity.rotation = Quaternion.Slerp(transformInGravity.rotation, Quaternion.FromToRotation(-transformInGravity.up, gravityDirection) * transformInGravity.rotation, gravitySettings.autoOrientSpeed * Time.deltaTime);
                         }
                     }
                 }

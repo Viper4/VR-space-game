@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class CelestialBodyGenerator : MonoBehaviour
 {
+    [SerializeField] Camera targetCamera;
     public bool autoUpdate = true;
     public enum FaceRenderMask
     {
@@ -29,13 +30,11 @@ public class CelestialBodyGenerator : MonoBehaviour
     ShapeGenerator shapeGenerator;
     ColorGenerator colorGenerator;
 
-    [SerializeField, HideInInspector] MeshFilter[] meshFilters;
-    MeshCollider[] meshColliders;
-    TerrainFace[] terrainFaces;
+    TerrainChunk[] rootChunks;
 
     [SerializeField] Vector2 seedRange = new Vector2(-999, 999);
 
-    [SerializeField] bool generateMeshColliders;
+    [SerializeField] bool forceGenerateMeshColliders;
 
     private void Init()
     {
@@ -77,61 +76,42 @@ public class CelestialBodyGenerator : MonoBehaviour
         shapeGenerator.UpdateSettings(shapeSettings);
         colorGenerator.UpdateSettings(colorSettings, bodyMaterial);
 
-        int numMeshes = 6 * shapeSettings.levelOfDetail * shapeSettings.levelOfDetail;
-        if (meshFilters == null || meshFilters.Length != numMeshes || meshColliders == null || meshColliders.Length != numMeshes)
+        int childCount = transform.childCount;
+        for (int i = 0; i < childCount; i++)
         {
-            for (int i = 0; i < meshFilters.Length; i++)
+            if (Application.isEditor)
             {
-                if (meshFilters[i] != null)
-                {
-                    if (Application.isEditor)
-                    {
-                        DestroyImmediate(meshFilters[i].gameObject);
-                    }
-                    else
-                    {
-                        Destroy(meshFilters[i].gameObject);
-                    }
-                }
+                DestroyImmediate(transform.GetChild(0).gameObject);
             }
-            meshFilters = new MeshFilter[numMeshes];
-            if (generateMeshColliders)
-                meshColliders = new MeshCollider[numMeshes];
+            else
+            {
+                Destroy(transform.GetChild(0).gameObject);
+            }
         }
-        terrainFaces = new TerrainFace[numMeshes];
+        rootChunks = new TerrainChunk[6];
 
         Vector3[] directions = new Vector3[] { Vector3.up, Vector3.down, Vector3.right, Vector3.left, Vector3.forward, Vector3.back };
 
-        int index = 0;
         for(int i = 0; i < 6; i++)
         {
-            for(int r = 0; r < shapeSettings.levelOfDetail; r++)
-            {
-                for(int c = 0; c < shapeSettings.levelOfDetail; c++)
-                {
-                    if (meshFilters[index] == null)
-                    {
-                        GameObject meshObject = new GameObject("Mesh" + i);
-                        meshObject.transform.SetParent(transform, false);
+            rootChunks[i] = new TerrainChunk(shapeGenerator, shapeSettings, directions[i]);
+            if (renderMask == FaceRenderMask.All || (int)renderMask - 1 == i)
+                rootChunks[i].GenerateTree(null, transform, colorGenerator);
+        }
+    }
 
-                        meshObject.AddComponent<MeshRenderer>();
-                        meshFilters[index] = meshObject.AddComponent<MeshFilter>();
-                        meshFilters[index].sharedMesh = new Mesh();
-
-                        if (generateMeshColliders)
-                        {
-                            meshColliders[index] = meshObject.AddComponent<MeshCollider>();
-                            meshColliders[index].sharedMesh = new Mesh();
-                        }
-                    }
-                    meshFilters[index].GetComponent<MeshRenderer>().sharedMaterial = bodyMaterial;
-                    terrainFaces[index] = generateMeshColliders ? new TerrainFace(shapeGenerator, shapeSettings, meshFilters[index].sharedMesh, meshColliders[index].sharedMesh, r, c, directions[i]) : new TerrainFace(shapeGenerator, shapeSettings, meshFilters[index].sharedMesh, null, r, c, directions[i]);
-
-                    bool renderFace = renderMask == FaceRenderMask.All || (int)renderMask - 1 == i;
-                    meshFilters[index].gameObject.SetActive(renderFace);
-                    index++;
-                }
-            }
+    public void GenerateQuadTrees(Camera camera = null)
+    {
+        if(rootChunks == null || rootChunks.Length == 0)
+        {
+            GenerateCelestialBody();
+        }
+        foreach (TerrainChunk rootChunk in rootChunks)
+        {
+            if (camera != null)
+                rootChunk.GenerateTree(camera, transform, colorGenerator);
+            else
+                rootChunk.GenerateTree(targetCamera, transform, colorGenerator);
         }
     }
 
@@ -255,50 +235,24 @@ public class CelestialBodyGenerator : MonoBehaviour
 
     void GenerateMeshes()
     {
-        for (int i = 0; i < meshFilters.Length; i++)
+        for (int i = 0; i < rootChunks.Length; i++)
         {
-            if (meshFilters[i].gameObject.activeSelf)
-            {
-                terrainFaces[i].ConstructMesh();
-                if(generateMeshColliders)
-                    meshColliders[i].convex = true;
-            }
+            if (renderMask == FaceRenderMask.All || (int)renderMask - 1 == i)
+                rootChunks[i].ConstructMesh(null, forceGenerateMeshColliders);
         }
         colorGenerator.UpdateElevation(shapeGenerator.elevationMinMax);
     }
 
     /* TODO:
-     * Add option to apply coloring based on random noise instead of elevation
+     * Add option to apply coloring based on random noise instead of elevation and/or biome
      */
     void GenerateColors()
     {
         colorGenerator.UpdateColors();
-        for (int i = 0; i < meshFilters.Length; i++)
+        for (int i = 0; i < rootChunks.Length; i++)
         {
-            if (meshFilters[i].gameObject.activeSelf)
-            {
-                terrainFaces[i].UpdateUVs(colorGenerator);
-            }
-        }
-    }
-
-    /* TODO:
-     * Split up meshes more when closer to the camera 
-     * Maybe only activate mesh colliders directly adjacent to the mesh the camera is on
-     */
-    public void CalculateLODs(Camera camera)
-    {
-        Plane[] frustumPlanes = GeometryUtility.CalculateFrustumPlanes(camera);
-        for (int i = 0; i < meshFilters.Length; i++)
-        {
-            if (!GeometryUtility.TestPlanesAABB(frustumPlanes, meshFilters[i].mesh.bounds))
-            {
-                meshFilters[i].gameObject.SetActive(false);
-            }
-            else
-            {
-
-            }
+            if (renderMask == FaceRenderMask.All || (int)renderMask - 1 == i)
+                rootChunks[i].UpdateUVs(colorGenerator);
         }
     }
 }

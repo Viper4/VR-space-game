@@ -47,40 +47,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e09938fc50d6944a93e317132424199, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  targetCamera: {fileID: 0}
   autoUpdate: 0
   renderMask: 0
   shapeSettings: {fileID: 11400000, guid: eb00ff3f4adc92c4aa5550125651fca1, type: 2}
   colorSettings: {fileID: 11400000, guid: e133c4a10d314c84692efbe6a077e66e, type: 2}
-  cloneSettings: 0
+  cloneSettings: 1
   shapeSettingsFoldout: 1
   colorSettingsFoldout: 1
-  meshFilters:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
   seedRange: {x: -999, y: 999}
-  generateMeshColliders: 1
+  forceGenerateMeshColliders: 0
 --- !u!114 &6741833927358446544
 MonoBehaviour:
   m_ObjectHideFlags: 0
