@@ -12,9 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f95416c3bab0074b8d81d969793f7ec, type: 3}
   m_Name: Asteroid Generation
   m_EditorClassIdentifier: 
+  simple: 1
   autoGenerate: 1
   random: 1
-  radiusRange: {x: 1, y: 50}
+  radiusRange: {x: 10, y: 150}
   sphereField: 0
   calculateMass: 1
-  density: 50
+  density: 0.00005
+  initialAngularVelocityRange:
+  - {x: 0, y: 0, z: 0}
+  - {x: 0, y: 0, z: 0}

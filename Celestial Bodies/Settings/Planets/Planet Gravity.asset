@@ -13,9 +13,10 @@ MonoBehaviour:
   m_Name: Planet Gravity
   m_EditorClassIdentifier: 
   surfaceGravityRange: {x: 8.807, y: 10.807}
-  gravityRadiusMultiplier: 2
+  gravityRadiusMultiplier: 6
   affectedLayers:
     serializedVersion: 2
-    m_Bits: 4061
+    m_Bits: 8157
   autoOrient: 1
   autoOrientSpeed: 5
+  orbitAngle: 0

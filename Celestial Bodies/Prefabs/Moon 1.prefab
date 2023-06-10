@@ -9,10 +9,12 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 282850235984048783}
+  - component: {fileID: -4002108488490776149}
   - component: {fileID: 5761081526728979838}
   - component: {fileID: 6741833927358446544}
   - component: {fileID: 7988712374659034346}
   - component: {fileID: 805747966747620538}
+  - component: {fileID: -8207550002145788697}
   m_Layer: 0
   m_Name: Moon 1
   m_TagString: CelestialBody
@@ -35,6 +37,34 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &-4002108488490776149
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2201142413859200454}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 660b2028be04cb445a20efd3df3e65c9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  inScaledSpace: 1
+  _position:
+    x: 0
+    y: 0
+    z: 0
+  _scale:
+    x: 1
+    y: 1
+    z: 1
+  floatingOrigin: {fileID: 0}
+  celestialBody: {fileID: 6741833927358446544}
+  scaleFactor: 60000
+  worldSpaceThreshold: 80010
+  scaledSpaceThreshold: 79990
+  worldLayer: 0
+  scaledLayer: 12
 --- !u!114 &5761081526728979838
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -55,6 +85,7 @@ MonoBehaviour:
   cloneSettings: 1
   shapeSettingsFoldout: 1
   colorSettingsFoldout: 1
+  rootLOD: 2
   seedRange: {x: -999, y: 999}
   forceGenerateMeshColliders: 0
 --- !u!114 &6741833927358446544
@@ -74,6 +105,8 @@ MonoBehaviour:
   gravity: 1
   gravitySettingsFoldout: 0
   gravitySettings: {fileID: 11400000, guid: 6d7804aa2b56200498e97388c7364617, type: 2}
+  systemCenter: {fileID: 0}
+  scaledTransform: {fileID: 0}
 --- !u!54 &7988712374659034346
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -82,7 +115,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2201142413859200454}
   serializedVersion: 4
-  m_Mass: 1
+  m_Mass: 1000
   m_Drag: 0
   m_AngularDrag: 0
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -120,5 +153,21 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 3000
+  m_Radius: 1
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &-8207550002145788697
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2201142413859200454}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e67c9a4f7bd32b64e98f85e426f57e36, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  velocity:
+    x: 0
+    y: 0
+    z: 0

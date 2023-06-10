@@ -12,9 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f95416c3bab0074b8d81d969793f7ec, type: 3}
   m_Name: Star Generation
   m_EditorClassIdentifier: 
+  simple: 1
   autoGenerate: 1
   random: 1
-  radiusRange: {x: 50000, y: 100000}
-  sphereField: 500
+  radiusRange: {x: 200000, y: 10000000}
+  sphereField: 0
   calculateMass: 0
   density: 50
+  initialAngularVelocityRange:
+  - {x: 0, y: 0, z: 0}
+  - {x: 0, y: 0, z: 0}

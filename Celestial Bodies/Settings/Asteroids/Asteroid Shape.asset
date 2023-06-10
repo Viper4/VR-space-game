@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 783d31327df308f4a83c508760868385, type: 3}
   m_Name: Asteroid Shape
   m_EditorClassIdentifier: 
-  meshSizeIndex: 6
+  meshFilterResolution: 200
   levelOfDetail: 1
   complexMeshCollider: 0
-  meshColliderSizeIndex: 0
-  radius: 50
+  meshColliderResolution: 8
+  radius: 1
   filterLayers:
   - enabled: 1
     useFirstLayerAsMask: 0
@@ -108,7 +108,7 @@ MonoBehaviour:
         ridgeWidth: 0.05
   - enabled: 1
     useFirstLayerAsMask: 0
-    applyScale: 1
+    applyScale: 0
     filterSettings:
       filterType: 0
       simplexNoiseSettings:
@@ -152,7 +152,7 @@ MonoBehaviour:
         ridgeWidth: 0.05
   - enabled: 1
     useFirstLayerAsMask: 0
-    applyScale: 1
+    applyScale: 0
     filterSettings:
       filterType: 0
       simplexNoiseSettings:

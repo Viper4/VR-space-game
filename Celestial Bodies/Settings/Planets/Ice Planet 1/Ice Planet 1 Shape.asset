@@ -12,27 +12,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 783d31327df308f4a83c508760868385, type: 3}
   m_Name: Ice Planet 1 Shape
   m_EditorClassIdentifier: 
-  meshSizeIndex: 0
-  levelOfDetail: 2
+  meshFilterResolution: 128
+  levelOfDetail: 5
+  complexMeshCollider: 1
+  meshColliderResolution: 128
   radius: 10000
   filterLayers:
   - enabled: 1
     useFirstLayerAsMask: 0
+    applyScale: 0
     filterSettings:
       filterType: 0
       simplexNoiseSettings:
+        scale: {x: 1, y: 1, z: 1}
         seed: {x: 0, y: 0, z: 0}
         strength: 0.02
-        scale: {x: 1, y: 1, z: 1}
         layers: 6
         baseRoughness: 1
         roughness: 2
         persistence: 0.5
         minValue: 1
       ridgeNoiseSettings:
+        scale: {x: 0, y: 0, z: 0}
         seed: {x: 0, y: 0, z: 0}
         strength: 0
-        scale: {x: 0, y: 0, z: 0}
         layers: 0
         baseRoughness: 0
         roughness: 0
@@ -40,18 +43,18 @@ MonoBehaviour:
         minValue: 0
         weightMultiplier: 0
       perlinNoiseSettings:
+        scale: {x: 0, y: 0, z: 0}
         seed: {x: 0, y: 0, z: 0}
         strength: 0
-        scale: {x: 0, y: 0, z: 0}
         layers: 0
         baseRoughness: 0
         roughness: 0
         persistence: 0
         minValue: 0
       craterSettings:
+        scale: {x: 0, y: 0, z: 0}
         seed: {x: 0, y: 0, z: 0}
         strength: 0
-        scale: {x: 0, y: 0, z: 0}
         craters: 0
         minCraterRadius: 0
         maxCraterRadius: 1
@@ -61,21 +64,22 @@ MonoBehaviour:
         ridgeWidth: 2
   - enabled: 1
     useFirstLayerAsMask: 1
+    applyScale: 0
     filterSettings:
       filterType: 0
       simplexNoiseSettings:
+        scale: {x: 1, y: 1, z: 1}
         seed: {x: 0, y: 0, z: 0}
         strength: 2
-        scale: {x: 1, y: 1, z: 1}
         layers: 6
         baseRoughness: 1
         roughness: 2
         persistence: 0.5
         minValue: 1
       ridgeNoiseSettings:
+        scale: {x: 0, y: 0, z: 0}
         seed: {x: 0, y: 0, z: 0}
         strength: 0
-        scale: {x: 0, y: 0, z: 0}
         layers: 0
         baseRoughness: 0
         roughness: 0
@@ -83,18 +87,18 @@ MonoBehaviour:
         minValue: 0
         weightMultiplier: 0
       perlinNoiseSettings:
+        scale: {x: 0, y: 0, z: 0}
         seed: {x: 0, y: 0, z: 0}
         strength: 0
-        scale: {x: 0, y: 0, z: 0}
         layers: 0
         baseRoughness: 0
         roughness: 0
         persistence: 0
         minValue: 0
       craterSettings:
+        scale: {x: 0, y: 0, z: 0}
         seed: {x: 0, y: 0, z: 0}
         strength: 0
-        scale: {x: 0, y: 0, z: 0}
         craters: 0
         minCraterRadius: 0
         maxCraterRadius: 1
@@ -104,21 +108,22 @@ MonoBehaviour:
         ridgeWidth: 2
   - enabled: 1
     useFirstLayerAsMask: 1
+    applyScale: 0
     filterSettings:
       filterType: 1
       simplexNoiseSettings:
+        scale: {x: 0, y: 0, z: 0}
         seed: {x: 0, y: 0, z: 0}
         strength: 0
-        scale: {x: 0, y: 0, z: 0}
         layers: 0
         baseRoughness: 0
         roughness: 0
         persistence: 0
         minValue: 0
       ridgeNoiseSettings:
+        scale: {x: 1, y: 1, z: 1}
         seed: {x: 0, y: 0, z: 0}
         strength: 2
-        scale: {x: 1, y: 1, z: 1}
         layers: 6
         baseRoughness: 3
         roughness: 3
@@ -126,18 +131,18 @@ MonoBehaviour:
         minValue: 1
         weightMultiplier: 1
       perlinNoiseSettings:
+        scale: {x: 0, y: 0, z: 0}
         seed: {x: 0, y: 0, z: 0}
         strength: 0
-        scale: {x: 0, y: 0, z: 0}
         layers: 0
         baseRoughness: 0
         roughness: 0
         persistence: 0
         minValue: 0
       craterSettings:
+        scale: {x: 0, y: 0, z: 0}
         seed: {x: 0, y: 0, z: 0}
         strength: 0
-        scale: {x: 0, y: 0, z: 0}
         craters: 0
         minCraterRadius: 0
         maxCraterRadius: 1

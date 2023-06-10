@@ -12,8 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f95416c3bab0074b8d81d969793f7ec, type: 3}
   m_Name: Moon Generation
   m_EditorClassIdentifier: 
+  simple: 0
   autoGenerate: 1
   random: 1
-  radiusRange: {x: 2500, y: 9500}
+  radiusRange: {x: 10000, y: 30000}
+  sphereField: 0.25
   calculateMass: 0
   density: 50
+  initialAngularVelocityRange:
+  - {x: 0, y: 0, z: 0}
+  - {x: 0, y: 0, z: 0}

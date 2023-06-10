@@ -12,10 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88d83bfe8739ab34693c1294184b42e9, type: 3}
   m_Name: Star Gravity
   m_EditorClassIdentifier: 
-  surfaceGravity: 274
-  gravityRadiusMultiplier: 3
+  surfaceGravityRange: {x: 174, y: 374}
+  gravityRadiusMultiplier: 10
   affectedLayers:
     serializedVersion: 2
-    m_Bits: 4061
+    m_Bits: 8157
   autoOrient: 0
   autoOrientSpeed: 5
+  orbitAngle: 0

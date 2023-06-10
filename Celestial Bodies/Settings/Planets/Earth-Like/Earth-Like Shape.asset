@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 783d31327df308f4a83c508760868385, type: 3}
   m_Name: Earth-Like Shape
   m_EditorClassIdentifier: 
-  meshSizeIndex: 8
+  meshFilterResolution: 128
   levelOfDetail: 5
   complexMeshCollider: 1
-  meshColliderSizeIndex: 2
-  radius: 20000
+  meshColliderResolution: 128
+  radius: 1
   filterLayers:
   - enabled: 1
     useFirstLayerAsMask: 0

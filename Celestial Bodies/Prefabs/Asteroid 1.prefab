@@ -9,9 +9,11 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1584595711474637306}
+  - component: {fileID: 7448112571900520497}
   - component: {fileID: 654691890924152879}
   - component: {fileID: 1673852074928851070}
   - component: {fileID: 6356004437463594846}
+  - component: {fileID: 198411877378507747}
   m_Layer: 0
   m_Name: Asteroid 1
   m_TagString: CelestialBody
@@ -27,13 +29,41 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4028611689432565048}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 180.9, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7448112571900520497
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4028611689432565048}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 660b2028be04cb445a20efd3df3e65c9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  inScaledSpace: 1
+  _position:
+    x: 0
+    y: 0
+    z: 0
+  _scale:
+    x: 1
+    y: 1
+    z: 1
+  floatingOrigin: {fileID: 0}
+  celestialBody: {fileID: 1673852074928851070}
+  scaleFactor: 60000
+  worldSpaceThreshold: 10010
+  scaledSpaceThreshold: 9990
+  worldLayer: 0
+  scaledLayer: 12
 --- !u!114 &654691890924152879
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -54,6 +84,7 @@ MonoBehaviour:
   cloneSettings: 1
   shapeSettingsFoldout: 1
   colorSettingsFoldout: 1
+  rootLOD: 1
   seedRange: {x: -999, y: 999}
   forceGenerateMeshColliders: 1
 --- !u!114 &1673852074928851070
@@ -68,11 +99,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7ecefe1d978853f4f91e593a040236b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  generationSettingsFoldout: 0
+  generationSettingsFoldout: 1
   generationSettings: {fileID: 11400000, guid: 0be72f32df323dc4fb7839601af70aec, type: 2}
   gravity: 0
   gravitySettingsFoldout: 1
   gravitySettings: {fileID: 11400000, guid: fdf0ca84f16763142aaa2bf5de91eff5, type: 2}
+  systemCenter: {fileID: 0}
+  scaledTransform: {fileID: 0}
 --- !u!54 &6356004437463594846
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -100,3 +133,24 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!135 &198411877378507747
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4028611689432565048}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 1.5
+  m_Center: {x: 0, y: 0, z: 0}

@@ -13,9 +13,10 @@ MonoBehaviour:
   m_Name: Moon Gravity
   m_EditorClassIdentifier: 
   surfaceGravityRange: {x: 0.62, y: 2.62}
-  gravityRadiusMultiplier: 2
+  gravityRadiusMultiplier: 4
   affectedLayers:
     serializedVersion: 2
     m_Bits: 4061
   autoOrient: 1
   autoOrientSpeed: 5
+  orbitAngle: 0

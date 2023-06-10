@@ -46,6 +46,7 @@ MonoBehaviour:
         m_NumColorKeys: 5
         m_NumAlphaKeys: 2
       tint: {r: 0, g: 0, b: 0, a: 0}
+      colorWithMinMax: 1
       startHeight: 0
       tintPercent: 0
       weightMultiplier: 1
@@ -80,6 +81,7 @@ MonoBehaviour:
         m_NumColorKeys: 7
         m_NumAlphaKeys: 2
       tint: {r: 0, g: 0, b: 0, a: 0}
+      colorWithMinMax: 1
       startHeight: 0.1
       tintPercent: 0
       weightMultiplier: 1
@@ -114,12 +116,14 @@ MonoBehaviour:
         m_NumColorKeys: 5
         m_NumAlphaKeys: 2
       tint: {r: 0, g: 0, b: 0, a: 0}
+      colorWithMinMax: 1
       startHeight: 0.9
       tintPercent: 0
       weightMultiplier: 1
     filter:
       filterType: 0
       simplexNoiseSettings:
+        scale: {x: 0, y: 0, z: 0}
         seed: {x: 0, y: 0, z: 0}
         strength: 1
         layers: 4
@@ -128,6 +132,7 @@ MonoBehaviour:
         persistence: 0.5
         minValue: 0
       ridgeNoiseSettings:
+        scale: {x: 0, y: 0, z: 0}
         seed: {x: 0, y: 0, z: 0}
         strength: 1
         layers: 1
@@ -137,6 +142,7 @@ MonoBehaviour:
         minValue: 0
         weightMultiplier: 1
       perlinNoiseSettings:
+        scale: {x: 0, y: 0, z: 0}
         seed: {x: 0, y: 0, z: 0}
         strength: 1
         layers: 1
@@ -144,14 +150,17 @@ MonoBehaviour:
         roughness: 2
         persistence: 0.5
         minValue: 0
-        scale: 1
       craterSettings:
+        scale: {x: 0, y: 0, z: 0}
         seed: {x: 0, y: 0, z: 0}
         strength: 1
         craters: 0
+        minCraterRadius: 0.01
         maxCraterRadius: 1
+        craterFloor: 0
         sizeDistribution: 0.5
-        minCraterDepth: 0
+        ridgeHeight: 0.1
+        ridgeWidth: 0.1
     offset: 1
     strength: 0.2
     blend: 0.1
