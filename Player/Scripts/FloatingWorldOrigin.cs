@@ -7,31 +7,31 @@ using SpaceStuff;
 public class FloatingWorldOrigin : MonoBehaviour
 {
     [SerializeField] float shiftThreshold = 500;
-    [SerializeField] Transform movingTransform;
 
     void LateUpdate()
     {
-        if(Mathf.Abs(movingTransform.position.x) > shiftThreshold || Mathf.Abs(movingTransform.position.y) > shiftThreshold || Mathf.Abs(movingTransform.position.z) > shiftThreshold)
+        if(Mathf.Abs(transform.position.x) > shiftThreshold || Mathf.Abs(transform.position.y) > shiftThreshold || Mathf.Abs(transform.position.z) > shiftThreshold)
         {
+            Vector3 positionOffset = transform.position;
             for(int i = 0; i < SceneManager.sceneCount; i++)
             {
-                foreach (GameObject rootObject in SceneManager.GetSceneAt(i).GetRootGameObjects())
+                foreach(GameObject rootObject in SceneManager.GetSceneAt(i).GetRootGameObjects())
                 {
-                    if (!rootObject.transform.HasTag("StaticPosition"))
+                    if(!rootObject.transform.HasTag("StaticPosition"))
                     {
                         if(rootObject.TryGetComponent<ScaledTransform>(out var scaledTransform))
                         {
-                            scaledTransform.position -= movingTransform.position.ToVector3d();
+                            scaledTransform.position -= positionOffset.ToVector3d();
                         }
                         else
                         {
-                            rootObject.transform.position -= movingTransform.position;
+                            rootObject.transform.position -= positionOffset;
                         }
                     }
                 }
             }
-            movingTransform.position = Vector3.zero;
-            Debug.Log("Shifted floating origin " + movingTransform.name);
+            transform.position = Vector3.zero;
+            Debug.Log("Shifted floating origin " + transform.name);
         }
     }
 }

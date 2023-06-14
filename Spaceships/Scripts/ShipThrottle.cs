@@ -30,7 +30,7 @@ public class ShipThrottle : MonoBehaviour
         lockStartPos = lockButton.localPosition.x;
     }
 
-    void Update()
+    void LateUpdate()
     {
         if (hand != null)
         {
@@ -42,7 +42,7 @@ public class ShipThrottle : MonoBehaviour
 
             value = CustomMethods.normalize(fixedClampedEulers.x, angleRange[0], angleRange[1]);
 
-            if (VRControl.playerSettings.shipControls.grabToggle)
+            if (VRControl.playerSettings.grabToggle)
             {
                 if (grabAction.GetStateDown(pose.inputSource))
                 {

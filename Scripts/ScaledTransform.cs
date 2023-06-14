@@ -17,6 +17,8 @@ public class ScaledTransform : MonoBehaviour
         set
         {
             _position = value;
+            if (!inScaledSpace)
+                transform.position = _position.ToVector3();
             UpdateTransform();
         }
     }
@@ -49,11 +51,11 @@ public class ScaledTransform : MonoBehaviour
             physicsHandler.active = inScaledSpace;
     }
 
-    private void FixedUpdate()
+    /*private void FixedUpdate()
     {
         if(!inScaledSpace)
             position = transform.position.ToVector3d();
-    }
+    }*/
 
     private void OnValidate()
     {
@@ -78,45 +80,53 @@ public class ScaledTransform : MonoBehaviour
         if (inScaledSpace)
         {
             UpdateInScaledSpace(origin);
-            double distanceToOrigin = Vector3d.Distance(position, origin);
+            double distanceToOrigin = Vector3d.Distance(_position, origin);
             if (distanceToOrigin < worldSpaceThreshold)
                 SwitchToWorldSpace();
         }
         else
         {
             UpdateInWorldSpace();
-            double distanceToOrigin = Vector3d.Distance(position, origin);
+            double distanceToOrigin = Vector3d.Distance(_position, origin);
             if (distanceToOrigin > scaledSpaceThreshold)
-                SwitchToScaledSpace(origin);
+                SwitchToScaledSpace();
         }
     }
 
     private void UpdateInScaledSpace(Vector3d origin)
     {
-        transform.position = new Vector3((float)((position.x - origin.x) / scaleFactor + origin.x), (float)((position.y - origin.y) / scaleFactor + origin.y), (float)((position.z - origin.z) / scaleFactor + origin.z));
-        transform.localScale = new Vector3((float)(scale.x / scaleFactor), (float)(scale.y / scaleFactor), (float)(scale.z / scaleFactor));
+        transform.position = new Vector3((float)((_position.x - origin.x) / scaleFactor + origin.x), (float)((_position.y - origin.y) / scaleFactor + origin.y), (float)((_position.z - origin.z) / scaleFactor + origin.z));
+        transform.localScale = new Vector3((float)(_scale.x / scaleFactor), (float)(_scale.y / scaleFactor), (float)(_scale.z / scaleFactor));
     }
 
     private void UpdateInWorldSpace()
     {
-        transform.position = position.ToVector3();
-        transform.localScale = scale.ToVector3();
+        _position = transform.position.ToVector3d();
+        _scale = transform.localScale.ToVector3d();
     }
 
-    private void SwitchToScaledSpace(Vector3d origin)
+    private void SwitchToScaledSpace()
     {
         gameObject.layer = scaledLayer;
+        foreach (Transform child in transform)
+        {
+            child.gameObject.layer = scaledLayer;
+        }
         inScaledSpace = true;
-        UpdateInScaledSpace(origin);
-        if(physicsHandler != null)
+        if (physicsHandler != null)
             physicsHandler.active = true;
     }
 
     private void SwitchToWorldSpace()
     {
         gameObject.layer = worldLayer;
+        foreach (Transform child in transform)
+        {
+            child.gameObject.layer = worldLayer;
+        }
         inScaledSpace = false;
-        UpdateInWorldSpace();
+        transform.position = _position.ToVector3();
+        transform.localScale = _scale.ToVector3();
         if (physicsHandler != null)
             physicsHandler.active = false;
     }

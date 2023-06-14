@@ -45,7 +45,7 @@ public class ShipJoystick : MonoBehaviour
         toggleStartEulers = toggleSwitch.localEulerAngles;
     }
 
-    void Update()
+    void LateUpdate()
     {
         if(hand != null)
         {
@@ -94,7 +94,7 @@ public class ShipJoystick : MonoBehaviour
                 }
             }
 
-            if (VRControl.playerSettings.shipControls.grabToggle)
+            if (VRControl.playerSettings.grabToggle)
             {
                 if (grabAction.GetStateDown(pose.inputSource))
                 {

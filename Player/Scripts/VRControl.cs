@@ -69,10 +69,7 @@ public class VRControl : MonoBehaviour
     {
         playerSettings = new PlayerSettings()
         {
-            shipControls = new PlayerSettings.ShipControls()
-            {
-                grabToggle = false,
-            }
+            grabToggle = false,
         };
     }
 

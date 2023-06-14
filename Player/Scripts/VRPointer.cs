@@ -41,9 +41,9 @@ public class VRPointer : MonoBehaviour
         pose = GetComponent<SteamVR_Behaviour_Pose>();
         hand = GetComponent<Hand>();
         attachmentPoint = hand.objectAttachmentPoint;
-        line = Instantiate(linePrefab).GetComponent<LineRenderer>();
+        line = Instantiate(linePrefab, attachmentPoint).GetComponent<LineRenderer>();
         line.gameObject.SetActive(false);
-        dot = Instantiate(dotPrefab).transform;
+        dot = Instantiate(dotPrefab, attachmentPoint).transform;
         dot.gameObject.SetActive(false);
 
         pointerEventData = new PointerEventData(EventSystem.current)
@@ -53,7 +53,7 @@ public class VRPointer : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    void LateUpdate()
     {
         HidePointer();
         if (hand.currentAttachedObject == null)
@@ -74,44 +74,46 @@ public class VRPointer : MonoBehaviour
                 Debug.DrawLine(attachmentPoint.position, hit.point, Color.red, 0.1f);
                 if(hit.collider.gameObject.layer == 5) // UI
                 {
-                    ShowPointer(new Vector3[] { attachmentPoint.position, hit.point });
-                    Selectable selectable = hit.collider.transform.parent.GetComponent<Selectable>();
-                    
-                    if (previousUIContact != hit.collider)
+                    if (hit.collider.transform.parent.TryGetComponent<Selectable>(out var selectable))
                     {
-                        if (previousUIContact)
-                        {
-                            previousUIContact.transform.parent.GetComponent<Selectable>().OnPointerExit(null);
-                        }
-                        
-                        selectable.OnPointerEnter(pointerEventData);
+                        ShowPointer(new Vector3[] { Vector3.zero, attachmentPoint.InverseTransformPoint(hit.point) });
 
-                        previousUIContact = hit.collider;
-                    }
-                    if (interactUIAction.GetStateDown(pose.inputSource))
-                    {
-                        selectable.OnPointerDown(pointerEventData);
-                    }
-                    if (interactUIAction.GetStateUp(pose.inputSource))
-                    {
-                        selectable.OnPointerUp(pointerEventData);
-                        switch (selectable)
+                        if (previousUIContact != hit.collider)
                         {
-                            case Button button:
-                                button.OnPointerClick(pointerEventData);
-                                break;
-                            case Slider slider:
-                                
-                                break;
-                            case Toggle toggle:
-                                toggle.OnPointerClick(pointerEventData);
-                                break;
-                            case TMP_Dropdown dropdown:
-                                dropdown.OnPointerClick(pointerEventData);
-                                break;
-                            case TMP_InputField inputField:
-                                inputField.OnPointerClick(pointerEventData);
-                                break;
+                            if (previousUIContact)
+                            {
+                                previousUIContact.transform.parent.GetComponent<Selectable>().OnPointerExit(null);
+                            }
+
+                            selectable.OnPointerEnter(pointerEventData);
+
+                            previousUIContact = hit.collider;
+                        }
+                        if (interactUIAction.GetStateDown(pose.inputSource))
+                        {
+                            selectable.OnPointerDown(pointerEventData);
+                        }
+                        if (interactUIAction.GetStateUp(pose.inputSource))
+                        {
+                            selectable.OnPointerUp(pointerEventData);
+                            switch (selectable)
+                            {
+                                case Button button:
+                                    button.OnPointerClick(pointerEventData);
+                                    break;
+                                case Slider slider:
+
+                                    break;
+                                case Toggle toggle:
+                                    toggle.OnPointerClick(pointerEventData);
+                                    break;
+                                case TMP_Dropdown dropdown:
+                                    dropdown.OnPointerClick(pointerEventData);
+                                    break;
+                                case TMP_InputField inputField:
+                                    inputField.OnPointerClick(pointerEventData);
+                                    break;
+                            }
                         }
                     }
                 }
@@ -121,13 +123,13 @@ public class VRPointer : MonoBehaviour
 
                     if (hit.collider.transform.HasTag("PointerInteractable"))
                     {
-                        ShowPointer(new Vector3[] { attachmentPoint.position, hit.point });
+                        ShowPointer(new Vector3[] { Vector3.zero, attachmentPoint.InverseTransformPoint(hit.point) });
 
                         TestPointerInteractable(hit.collider.transform);
                     }
                     else if (hit.transform.HasTag("PointerInteractable"))
                     {
-                        ShowPointer(new Vector3[] { attachmentPoint.position, hit.point });
+                        ShowPointer(new Vector3[] { Vector3.zero, attachmentPoint.InverseTransformPoint(hit.point) });
 
                         TestPointerInteractable(hit.transform);
                     }
@@ -190,7 +192,7 @@ public class VRPointer : MonoBehaviour
     {
         line.SetPositions(positions);
         line.gameObject.SetActive(true);
-        dot.position = positions[^1];
+        dot.localPosition = positions[^1];
         dot.gameObject.SetActive(true);
     }
 

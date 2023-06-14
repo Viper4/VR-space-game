@@ -16,7 +16,7 @@ MonoBehaviour:
   gravityRadiusMultiplier: 10
   affectedLayers:
     serializedVersion: 2
-    m_Bits: 8157
+    m_Bits: 8093
   autoOrient: 0
   autoOrientSpeed: 5
   orbitAngle: 0

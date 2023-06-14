@@ -104,6 +104,7 @@ MonoBehaviour:
   target: {fileID: 0}
   detonationDistance: 5
   propulsionForce: 10
+  translationForce: 50
   rotationForce: 2
   p: 0
   i: 0
@@ -171,5 +172,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tags:
-  - Target
   - Projectile
+  - RadarTarget

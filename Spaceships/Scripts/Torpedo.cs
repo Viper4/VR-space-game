@@ -7,20 +7,19 @@ public class Torpedo : MonoBehaviour
     public Transform target;
     public float detonationDistance = 5;
     [SerializeField] float propulsionForce = 1000;
+    [SerializeField] float translationForce = 50;
     [SerializeField] float rotationForce = 100;
     Rigidbody _rigidbody;
-    PIDController xRotationPID;
-    PIDController yRotationPID;
-    PIDController zRotationPID;
+    PIDController translationPID;
+    PIDController rotationPID;
     [SerializeField] float p, i, d;
     bool active;
 
     void Start()
     {
         _rigidbody = GetComponent<Rigidbody>();
-        xRotationPID = new PIDController(p, i ,d);
-        yRotationPID = new PIDController(p, i ,d);
-        zRotationPID = new PIDController(p, i ,d);
+        translationPID = new PIDController(p, i, d);
+        rotationPID = new PIDController(p, i ,d);
     }
 
     void Update()
@@ -29,11 +28,11 @@ public class Torpedo : MonoBehaviour
         {
             Vector3 targetDirection = target.position - transform.position;
             Vector3 error = targetDirection - transform.forward;
-            float torqueX = xRotationPID.GetOutput(error.x, Time.deltaTime);
-            float torqueY = yRotationPID.GetOutput(error.y, Time.deltaTime);
-            float torqueZ = zRotationPID.GetOutput(error.z, Time.deltaTime);
+            float torqueX = Mathf.Clamp(rotationPID.GetOutput(error.x, Time.deltaTime), -rotationForce, rotationForce);
+            float torqueY = Mathf.Clamp(rotationPID.GetOutput(error.y, Time.deltaTime), -rotationForce, rotationForce);
+            float torqueZ = Mathf.Clamp(rotationPID.GetOutput(error.z, Time.deltaTime), -rotationForce, rotationForce);
             _rigidbody.AddRelativeTorque(new Vector3(torqueX, torqueY, torqueZ) * rotationForce, ForceMode.Acceleration);
-            if(error.sqrMagnitude < 0.5f)
+            if(error.sqrMagnitude < 4)
             {
                 _rigidbody.AddRelativeForce(Vector3.forward * propulsionForce, ForceMode.Acceleration);
             }
@@ -63,7 +62,7 @@ public class Torpedo : MonoBehaviour
 
     private void Detonate()
     {
-
+        Destroy(gameObject);
     }
 
     private void OnCollisionEnter(Collision collision)

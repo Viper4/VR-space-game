@@ -6,6 +6,10 @@ using SpaceStuff;
 
 public class ShipControl : MonoBehaviour
 {
+    [SerializeField] bool hasPilot;
+    [SerializeField] Camera pilotCamera;
+    Dictionary<Transform, Transform> playerParentPair = new Dictionary<Transform, Transform>();
+
     [SerializeField] ShipJoystick joystick;
     [SerializeField] ShipThrottle throttle;
     [SerializeField] Switch[] shipSwitches;
@@ -21,10 +25,9 @@ public class ShipControl : MonoBehaviour
     bool autoStabilizeRot = false;
     bool autoStabilizePos = false;
 
-    [SerializeField] Transform pilot;
-    Camera pilotCam;
-
-    [SerializeField] Transform hudPivot;
+    [SerializeField] Transform cockpit;
+    [SerializeField] Transform HUDPivot;
+    [SerializeField] LayerMask targetLayers;
 
     [SerializeField] RectTransform turretControlUI;
     [SerializeField] GameObject turretCrosshairPrefab;
@@ -45,9 +48,8 @@ public class ShipControl : MonoBehaviour
     [SerializeField]
     [Range(-1000, 1000)]
     float P, I, D;
-    PIDController xRotationPID;
-    PIDController yRotationPID;
-    PIDController zRotationPID;
+    PIDController rotationPID;
+    PIDController translationPID;
 
     Transform target;
 
@@ -61,10 +63,8 @@ public class ShipControl : MonoBehaviour
             Instantiate(turretCrosshairPrefab, turretControlUI);
         }
 
-        xRotationPID = new PIDController(P, I, D);
-        yRotationPID = new PIDController(P, I, D);
-        zRotationPID = new PIDController(P, I, D);
-        pilotCam = pilot.GetComponent<Camera>();
+        rotationPID = new PIDController(P, I, D);
+        translationPID = new PIDController(P, I, D);
     }
 
     private void OnEnable()
@@ -93,111 +93,137 @@ public class ShipControl : MonoBehaviour
         }
     }
 
-    void Update()
+    void LateUpdate()
     {
-        Vector3 joystickDirection = joystick.direction;
-        if(translationMode != 1)
+        Vector3 joystickDirection = Vector3.zero;
+        if (hasPilot)
         {
-            if (joystickDirection.x != 0 && joystickDirection.z != 0)
+            joystickDirection = joystick.direction;
+            if (translationMode != 1)
             {
-                switch (translationMode)
+                if (joystickDirection.x != 0 && joystickDirection.z != 0)
                 {
-                    case 0: // Vertical
-                        shipRigidbody.AddRelativeForce(new Vector3(-joystickDirection.z, -joystickDirection.x, 0) * translationForce, ForceMode.Acceleration);
-                        break;
-                    case 2: // Horizontal
-                        shipRigidbody.AddRelativeForce(new Vector3(-joystickDirection.z, 0, joystickDirection.x) * translationForce, ForceMode.Acceleration);
-                        break;
-                }
-            }
-        }
-        else
-        {
-            if(!turretControl)
-                shipRigidbody.AddRelativeTorque(joystickDirection * rotationForce, ForceMode.Acceleration);
-        }
-
-        hudPivot.SetPositionAndRotation(pilot.position, pilot.rotation);
-        hudPivot.localEulerAngles = new Vector3(hudPivot.localEulerAngles.x, hudPivot.localEulerAngles.y, 0);
-        if (turretControl)
-        {
-            crosshair.transform.localPosition = new Vector2(-joystick.direction.z * turretControlUI.rect.width * 0.5f, -joystick.direction.x * turretControlUI.rect.height * 0.5f);
-            Vector3 crosshairDirection = crosshair.transform.position - pilot.position;
-
-            if (Physics.Raycast(crosshair.transform.position, crosshairDirection, out RaycastHit hit, Mathf.Infinity))
-            {
-                if (hit.transform.HasTag("Target"))
-                {
-                    target = hit.transform;
-                }
-                Debug.DrawLine(crosshair.transform.position, hit.point, Color.green, 0.1f);
-                if(!triggerHeld)
-                    crosshair.color = hoverColor;
-                for (int i = 0; i < turrets.Length; i++)
-                {
-                    Turret turret = turrets[i];
-                    turret.targetDirection = hit.point - turret.firePoint.position;
-                    Transform turretCrosshair = turretControlUI.GetChild(i + 1);
-                    Vector3 turretHitPoint = Physics.Raycast(turret.firePoint.position, turret.firePoint.forward, out RaycastHit turretHit, Mathf.Infinity) ? turretHit.point : turret.firePoint.position + turret.firePoint.forward * 500;
-                    
-                    if (RectTransformUtility.ScreenPointToWorldPointInRectangle(turretControlUI, pilotCam.WorldToScreenPoint(turretHitPoint), pilotCam, out Vector3 turretCrosshairPos))
+                    switch (translationMode)
                     {
-                        turretCrosshair.position = turretCrosshairPos;
-                    }
-                    if (!Physics.Linecast(turret.firePoint.position, turret.firePoint.position + turret.firePoint.forward * 5, ~turret.ignoreLayers))
-                    {
-                        turretCrosshair.GetComponent<Image>().color = turretNormalColor;
-                    }
-                    else
-                    {
-                        turretCrosshair.GetComponent<Image>().color = turretBlockedColor;
+                        case 0: // Vertical
+                            shipRigidbody.AddRelativeForce(new Vector3(-joystickDirection.z, -joystickDirection.x, 0) * translationForce, ForceMode.Acceleration);
+                            break;
+                        case 2: // Horizontal
+                            shipRigidbody.AddRelativeForce(new Vector3(-joystickDirection.z, 0, joystickDirection.x) * translationForce, ForceMode.Acceleration);
+                            break;
                     }
                 }
             }
             else
             {
-                target = null;
-                if(!triggerHeld)
-                    crosshair.color = normalColor;
-                for (int i = 0; i < turrets.Length; i++)
-                {
-                    Turret turret = turrets[i];
-                    turret.targetDirection = crosshairDirection;
-                    Transform turretCrosshair = turretControlUI.GetChild(i + 1);
-                    Vector3 turretAimPosition = turret.firePoint.position + turret.firePoint.forward * 500;
+                if (!turretControl)
+                    shipRigidbody.AddRelativeTorque(joystickDirection * rotationForce, ForceMode.Acceleration);
+            }
 
-                    if(RectTransformUtility.ScreenPointToWorldPointInRectangle(turretControlUI, pilotCam.WorldToScreenPoint(turretAimPosition), pilotCam, out Vector3 turretCrosshairPos))
+            HUDPivot.SetPositionAndRotation(FlatCamera.instance.transform.position, FlatCamera.instance.transform.rotation);
+            if (turretControl)
+            {
+                crosshair.transform.localPosition = new Vector2(-joystick.direction.z * turretControlUI.rect.width * 0.5f, -joystick.direction.x * turretControlUI.rect.height * 0.5f);
+                Vector3 crosshairDirection = crosshair.transform.position - HUDPivot.position;
+
+                if (Physics.Raycast(crosshair.transform.position, crosshairDirection, out RaycastHit hit, Mathf.Infinity, targetLayers))
+                {
+                    if (hit.transform.HasTag("RadarTarget"))
                     {
-                        turretCrosshair.position = turretCrosshairPos;
+                        target = hit.transform;
                     }
-                    if (!Physics.Linecast(turret.firePoint.position, turret.firePoint.position + turret.firePoint.forward * 5, ~turret.ignoreLayers))
+                    Debug.DrawLine(crosshair.transform.position, hit.point, Color.green, 0.1f);
+                    if (!triggerHeld)
+                        crosshair.color = hoverColor;
+                    for (int i = 0; i < turrets.Length; i++)
                     {
-                        turretCrosshair.GetComponent<Image>().color = turretNormalColor;
+                        Turret turret = turrets[i];
+                        turret.targetDirection = hit.point - turret.firePoint.position;
+                        Transform turretCrosshair = turretControlUI.GetChild(i + 1);
+                        Vector3 turretHitPoint;
+                        if (Physics.Raycast(turret.firePoint.position, turret.firePoint.forward, out RaycastHit turretHit, Mathf.Infinity, ~turret.ignoreLayers))
+                        {
+                            if (turretHit.transform != transform)
+                                turretCrosshair.GetComponent<Image>().color = turretNormalColor;
+                            else
+                                turretCrosshair.GetComponent<Image>().color = turretBlockedColor;
+                            turretHitPoint = turretHit.point;
+                        }
+                        else
+                        {
+                            turretCrosshair.GetComponent<Image>().color = turretNormalColor;
+                            turretHitPoint = turret.firePoint.position + turret.firePoint.forward * 500;
+                        }
+
+                        if (RectTransformUtility.ScreenPointToWorldPointInRectangle(turretControlUI, pilotCamera.WorldToScreenPoint(turretHitPoint), pilotCamera, out Vector3 turretCrosshairPos))
+                        {
+                            turretCrosshair.position = turretCrosshairPos;
+                        }
                     }
-                    else
+                }
+                else
+                {
+                    target = null;
+                    if (!triggerHeld)
+                        crosshair.color = normalColor;
+                    for (int i = 0; i < turrets.Length; i++)
                     {
-                        turretCrosshair.GetComponent<Image>().color = turretBlockedColor;
+                        Turret turret = turrets[i];
+                        turret.targetDirection = crosshairDirection;
+                        Transform turretCrosshair = turretControlUI.GetChild(i + 1);
+                        Vector3 turretAimPosition = turret.firePoint.position + turret.firePoint.forward * 500;
+
+                        if (RectTransformUtility.ScreenPointToWorldPointInRectangle(turretControlUI, pilotCamera.WorldToScreenPoint(turretAimPosition), pilotCamera, out Vector3 turretCrosshairPos))
+                        {
+                            turretCrosshair.position = turretCrosshairPos;
+                        }
+                        if (!Physics.Linecast(turret.firePoint.position, turret.firePoint.position + turret.firePoint.forward * 5, ~turret.ignoreLayers))
+                        {
+                            turretCrosshair.GetComponent<Image>().color = turretNormalColor;
+                        }
+                        else
+                        {
+                            turretCrosshair.GetComponent<Image>().color = turretBlockedColor;
+                        }
                     }
                 }
             }
         }
+        
         Vector3 force = launchMode ? launchForce * throttle.value * Vector3.forward : cruiseForce * throttle.value * Vector3.forward;
         shipRigidbody.AddRelativeForce(force, ForceMode.Acceleration);
 
         if (autoStabilizeRot && (turretControl || joystickDirection == Vector3.zero))
         {
-            float torqueCorrectionX = -xRotationPID.GetOutput(shipRigidbody.angularVelocity.x, Time.deltaTime);
-            float torqueCorrectionY = -yRotationPID.GetOutput(shipRigidbody.angularVelocity.y, Time.deltaTime);
-            float torqueCorrectionZ = -zRotationPID.GetOutput(shipRigidbody.angularVelocity.z, Time.deltaTime);
+            float torqueCorrectionX = Mathf.Clamp(-rotationPID.GetOutput(shipRigidbody.angularVelocity.x, Time.deltaTime), -rotationForce, rotationForce);
+            float torqueCorrectionY = Mathf.Clamp(-rotationPID.GetOutput(shipRigidbody.angularVelocity.y, Time.deltaTime), -rotationForce, rotationForce);
+            float torqueCorrectionZ = Mathf.Clamp(-rotationPID.GetOutput(shipRigidbody.angularVelocity.z, Time.deltaTime), -rotationForce, rotationForce);
             shipRigidbody.AddTorque(new Vector3(torqueCorrectionX, torqueCorrectionY, torqueCorrectionZ) * rotationForce, ForceMode.Acceleration);
         }
         if (autoStabilizePos && throttle.value == 0 && joystickDirection == Vector3.zero)
         {
-            Vector3 localVelocity = shipRigidbody.transform.InverseTransformDirection(shipRigidbody.velocity);
-            float forceCorrectionX = -xRotationPID.GetOutput(localVelocity.x, Time.deltaTime);
-            float forceCorrectionY = -yRotationPID.GetOutput(localVelocity.y, Time.deltaTime);
-            float forceCorrectionZ = -zRotationPID.GetOutput(localVelocity.z, Time.deltaTime);
-            shipRigidbody.AddRelativeForce(new Vector3(forceCorrectionX, forceCorrectionY, forceCorrectionZ) * translationForce, ForceMode.Acceleration);
+            float forceCorrectionX = Mathf.Clamp(-translationPID.GetOutput(shipRigidbody.velocity.x, Time.deltaTime), -translationForce, translationForce);
+            float forceCorrectionY = Mathf.Clamp(-translationPID.GetOutput(shipRigidbody.velocity.y, Time.deltaTime), -translationForce, translationForce);
+            float forceCorrectionZ = Mathf.Clamp(-translationPID.GetOutput(shipRigidbody.velocity.z, Time.deltaTime), -translationForce, translationForce);
+            shipRigidbody.AddForce(new Vector3(forceCorrectionX, forceCorrectionY, forceCorrectionZ) * translationForce, ForceMode.Acceleration);
+        }
+    }
+
+    public void EnterShip(Transform player)
+    {
+        if (!playerParentPair.ContainsKey(player))
+        {
+            playerParentPair.Add(player, player.parent);
+            player.SetParent(transform);
+        }
+    }
+
+    public void ExitShip(Transform player)
+    {
+        if(playerParentPair.TryGetValue(player, out Transform playerParent))
+        {
+            player.SetParent(playerParent);
+            playerParentPair.Remove(player);
         }
     }
 
@@ -235,11 +261,11 @@ public class ShipControl : MonoBehaviour
         if (torpedoBayDoorOpen)
         {
             Debug.Log("Fire Torpedo");
-            foreach(TorpedoPoint torpedoPoint in torpedoPoints)
+            for(int i = 0; i < torpedoPoints.Length; i++)
             {
-                if (torpedoPoint.hasTorpedo)
+                if (torpedoPoints[i].hasTorpedo)
                 {
-                    torpedoPoint.LaunchTorpedo(target);
+                    torpedoPoints[i].LaunchTorpedo(target, i);
                     break;
                 }
             }

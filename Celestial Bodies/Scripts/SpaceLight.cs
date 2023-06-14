@@ -3,35 +3,48 @@ using System.Collections.Generic;
 using UnityEngine;
 using SpaceStuff;
 
-[RequireComponent(typeof(Light))]
 public class SpaceLight : MonoBehaviour
 {
-    Light _light;
-    [SerializeField] ScaledTransform scaledTransform;
-    [SerializeField] float strength = 1f;
+    private const double k = 5.67e-8;
+
+    [SerializeField] Light scaledLight;
+    [SerializeField] Light worldLight;
+    ScaledTransform scaledTransform;
     TransformChange target;
+    [SerializeField] float temperature = 5780f;
+    double luminosity;
 
     private void OnEnable()
     {
         target = Camera.main.transform.GetComponent<TransformChange>();
-        target.PositionChangeEvent += LookAtTarget;
+        target.PositionChangeEvent += UpdateLight;
     }
 
     private void OnDisable()
     {
-        target.PositionChangeEvent -= LookAtTarget;
+        target.PositionChangeEvent -= UpdateLight;
     }
 
-    void Start()
+    public void Init(float radius)
     {
-        _light = GetComponent<Light>();
+        scaledTransform = GetComponent<ScaledTransform>();
+        // L = 4piR^2sigmaT^4
+        luminosity = k * radius * radius * temperature * temperature * temperature * temperature;
+        scaledLight.intensity = (float)(luminosity / (scaledTransform.scaleFactor * scaledTransform.scaleFactor));
+        UpdateLight();
     }
 
-    private void LookAtTarget()
+    private void UpdateLight()
     {
         Vector3 difference = target.transform.position - scaledTransform.position.ToVector3();
-        transform.rotation = Quaternion.LookRotation(difference);
+        worldLight.transform.rotation = Quaternion.LookRotation(difference);
+
+        // Inverse square law of light: f = L / (4piD^2)
         float sqrDistance = difference.sqrMagnitude;
-        _light.intensity = strength * (1 / sqrDistance);
+        worldLight.intensity = (float)(luminosity / sqrDistance);
+        if (scaledTransform.inScaledSpace)
+            worldLight.shadows = LightShadows.Hard;
+        else
+            worldLight.shadows = LightShadows.None;
     }
 }

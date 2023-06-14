@@ -13,7 +13,9 @@ GameObject:
   - component: {fileID: 2881874909626024237}
   - component: {fileID: 1208913255037145551}
   - component: {fileID: 5194770327331619490}
+  - component: {fileID: -1015035638967885806}
   - component: {fileID: 4369985065114670286}
+  - component: {fileID: 7675155144533783308}
   m_Layer: 0
   m_Name: Ice Planet 1
   m_TagString: CelestialBody
@@ -60,8 +62,8 @@ MonoBehaviour:
   floatingOrigin: {fileID: 0}
   celestialBody: {fileID: 1208913255037145551}
   scaleFactor: 60000
-  worldSpaceThreshold: 80010
-  scaledSpaceThreshold: 79990
+  worldSpaceThreshold: 80050
+  scaledSpaceThreshold: 79950
   worldLayer: 0
   scaledLayer: 12
 --- !u!114 &2881874909626024237
@@ -133,6 +135,22 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &-1015035638967885806
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4269286246927614556}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e67c9a4f7bd32b64e98f85e426f57e36, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  velocity:
+    x: 0
+    y: 0
+    z: 0
 --- !u!135 &4369985065114670286
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -154,3 +172,18 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 1
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &7675155144533783308
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4269286246927614556}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35e3922e0f8b8e041884c661499c7370, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tags:
+  - CelestialBody
+  - RadarTarget

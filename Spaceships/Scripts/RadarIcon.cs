@@ -6,7 +6,7 @@ using TMPro;
 public class RadarIcon : MonoBehaviour
 {
     Radar parentRadar;
-    int iconID;
+    int ID;
 
     LineRenderer lineRenderer;
     [SerializeField] int maxLinePositions = 1000;
@@ -15,34 +15,42 @@ public class RadarIcon : MonoBehaviour
     List<Vector3> linePositions = new List<Vector3>();
     int positionIndex;
 
-    TextMeshPro text3D;
+    public Transform model;
+    [SerializeField] TextMeshPro text3D;
 
     [SerializeField] float killTime = 0.5f;
     float killTimer;
 
-    void Start()
-    {
-        TryGetComponent(out lineRenderer);
-        transform.GetChild(0).TryGetComponent(out text3D);
-        killTimer = killTime;
-        sqrNewLinePosThreshold = newLinePosThreshold * newLinePosThreshold;
-    }
+    Color baseColor;
 
-    void Update()
+    void LateUpdate()
     {
         killTimer -= Time.deltaTime;
         if (killTimer <= 0)
         {
-            parentRadar.RemoveIcon(iconID);
+            parentRadar.RemoveIcon(ID);
             Destroy(gameObject);
         }
-        text3D.transform.eulerAngles = new Vector3(Camera.main.transform.eulerAngles.x, Camera.main.transform.eulerAngles.y, Camera.main.transform.parent.eulerAngles.z);
+        text3D.transform.rotation = Quaternion.LookRotation(text3D.transform.position - FlatCamera.instance.transform.position, FlatCamera.instance.transform.up);
     }
 
-    public void CreateIcon(Radar radar, int instanceID, Vector3 position, Quaternion rotation, string text = "")
+    public void Init(Radar radar, int instanceID, Vector3 position, Quaternion rotation, Color baseColor, Color emission, string text = "")
     {
+        this.baseColor = baseColor;
+        MeshRenderer modelMeshRenderer = model.GetComponent<MeshRenderer>();
+        Material clonedMaterial = Instantiate(modelMeshRenderer.sharedMaterial);
+        clonedMaterial.color = baseColor;
+        clonedMaterial.SetColor("_EmissionColor", emission);
+        modelMeshRenderer.sharedMaterial = clonedMaterial;
+        if (TryGetComponent(out lineRenderer))
+        {
+            lineRenderer.sharedMaterial = clonedMaterial;
+        }
+
+        killTimer = killTime;
+        sqrNewLinePosThreshold = newLinePosThreshold * newLinePosThreshold;
         parentRadar = radar;
-        iconID = instanceID;
+        ID = instanceID;
         UpdateIcon(position, rotation, text);
     }
 
@@ -50,6 +58,8 @@ public class RadarIcon : MonoBehaviour
     {
         killTimer = killTime;
 
+        transform.position = position;
+        model.rotation = rotation;
         if (lineRenderer != null)
         {
             if((position - transform.position).sqrMagnitude > sqrNewLinePosThreshold)
@@ -72,9 +82,7 @@ public class RadarIcon : MonoBehaviour
         if (text3D != null)
         {
             text3D.text = text;
-            text3D.color = lineRenderer.sharedMaterial.color;
+            text3D.color = baseColor;
         }
-        transform.position = position;
-        transform.rotation = rotation;
     }
 }

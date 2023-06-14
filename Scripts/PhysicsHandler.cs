@@ -16,14 +16,23 @@ public class PhysicsHandler : MonoBehaviour
         set
         {
             _active = value;
-            attachedRigidbody.isKinematic = value;
+            if (value)
+            {
+                velocity = attachedRigidbody.velocity.ToVector3d();
+                attachedRigidbody.isKinematic = true;
+            }
+            else
+            {
+                attachedRigidbody.isKinematic = false;
+                attachedRigidbody.velocity = velocity.ToVector3();
+            }
         }
     }
     ScaledTransform scaledTransform;
     Rigidbody attachedRigidbody;
     public Vector3d velocity;
 
-    void Start()
+    void Awake()
     {
         TryGetComponent(out scaledTransform);
         attachedRigidbody = GetComponent<Rigidbody>();

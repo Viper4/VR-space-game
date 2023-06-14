@@ -67,7 +67,7 @@ public class Switch : MonoBehaviour
         if(indicator != null)
         {
             indicator.material.SetColor("_MainColor", indicatorColors[currentState]);
-            indicator.material.SetColor("_EmissionColor", indicatorColors[currentState]);
+            indicator.material.SetColor("_EmissionColor", indicatorEmissionColors[currentState]);
         }
 
         OnToggle(currentState);

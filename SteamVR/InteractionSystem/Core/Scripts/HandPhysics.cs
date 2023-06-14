@@ -32,6 +32,8 @@ namespace Valve.VR.InteractionSystem
 
         private bool collisionsEnabled = true;
 
+        [SerializeField] float smoothness = 1;
+
 
         private void Start()
         {
@@ -197,7 +199,8 @@ namespace Valve.VR.InteractionSystem
 
             Vector3 offsetPosition = handCollider.transform.TransformPoint(wristToArmature.inverse.MultiplyPoint3x4(Vector3.zero));
 
-            hand.mainRenderModel.transform.position = offsetPosition;
+            hand.mainRenderModel.transform.position = Vector3.Lerp(hand.mainRenderModel.transform.position, offsetPosition, Time.deltaTime * smoothness);
+            //hand.mainRenderModel.transform.position = offsetPosition;
 
             /*
             Vector3 wristPointInArmatureSpace = transform.InverseTransformPoint(handCollider.transform.position);

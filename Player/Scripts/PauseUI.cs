@@ -7,10 +7,9 @@ using UnityEngine.UI;
 public class PauseUI : MonoBehaviour
 {
     VRControl control;
-    [SerializeField] Camera UICamera;
     [SerializeField] LayerMask pausedCullingMask;
     [SerializeField] LayerMask normalCullingMask;
-    [SerializeField] Transform head;
+    [SerializeField] Camera UICamera;
     [SerializeField] GameObject pauseMenu;
     [SerializeField] SteamVR_Action_Boolean pauseAction = null;
     Animator animator;
@@ -50,8 +49,7 @@ public class PauseUI : MonoBehaviour
     {
         UICamera.cullingMask = pausedCullingMask;
         control.Paused = true;
-        pauseMenu.transform.position = head.position + head.forward;
-        pauseMenu.transform.rotation = head.rotation;
+        pauseMenu.transform.SetPositionAndRotation(UICamera.transform.position + UICamera.transform.forward, FlatCamera.instance.transform.rotation);
         pauseMenu.SetActive(true);
         animator.SetTrigger("PauseIn");
         settings = false;
@@ -66,7 +64,7 @@ public class PauseUI : MonoBehaviour
             switch (child.name)
             {
                 case "Grab Toggle":
-                    child.GetComponent<Toggle>().SetIsOnWithoutNotify(VRControl.playerSettings.shipControls.grabToggle);
+                    child.GetComponent<Toggle>().SetIsOnWithoutNotify(VRControl.playerSettings.grabToggle);
                     break;
             }
         }
@@ -89,6 +87,6 @@ public class PauseUI : MonoBehaviour
 
     public void SetGrabToggle(Toggle toggle)
     {
-        VRControl.playerSettings.shipControls.grabToggle = toggle.isOn;
+        VRControl.playerSettings.grabToggle = toggle.isOn;
     }
 }

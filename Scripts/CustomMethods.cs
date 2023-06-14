@@ -881,12 +881,16 @@ namespace SpaceStuff
 
     public static class CustomMethods
     {
-        private const double lightYear = 9.46073e15;
-        private const double centi = 1e-2;
         private const double kilo = 1e3;
         private const double mega = 1e6;
         private const double giga = 1e9;
-        private const double tera = 1e12;
+        private const double astronomicalUnit = 1.495978707e11;
+        private const double lightYear = 9.46073e15;
+
+        private const int minute = 60;
+        private const int hour = 3600;
+        private const int day = 86400;
+        private const int year = 31536000;
 
         public static bool HasTag(this Transform transform, string tag)
         {
@@ -980,31 +984,53 @@ namespace SpaceStuff
             return (value - min) / (max - min);
         }
 
-        // Assuming distance is in meters
-        public static string DistanceToFormattedString(double distance, int decimals = 0)
+        // Assuming units in meters or m/s
+        public static string MetersToFormattedString(double meters, int decimals = 0, string suffix = "")
         {
             double decimalOffset = Math.Pow(10, decimals);
-            if (distance >= tera)
+            if(meters >= lightYear)
             {
-                return (Math.Round(distance / tera * decimalOffset) / decimalOffset).ToString() + "Tm";
+                return (Math.Round(meters / lightYear * decimalOffset) / decimalOffset).ToString() + "ly";
             }
-            else if (distance >= giga)
+            else if(meters >= astronomicalUnit)
             {
-                return (Math.Round(distance / giga * decimalOffset) / decimalOffset).ToString() + "Gm";
+                return (Math.Round(meters / astronomicalUnit * decimalOffset) / decimalOffset).ToString() + "AU";
             }
-            else if (distance >= mega)
+            else if (meters >= giga)
             {
-                return (Math.Round(distance / mega * decimalOffset) / decimalOffset).ToString() + "Mm";
+                return (Math.Round(meters / giga * decimalOffset) / decimalOffset).ToString() + "Gm" + suffix;
             }
-            else if (distance >= kilo)
+            else if (meters >= mega)
             {
-                return (Math.Round(distance / kilo * decimalOffset) / decimalOffset).ToString() + "km";
+                return (Math.Round(meters / mega * decimalOffset) / decimalOffset).ToString() + "Mm" + suffix;
             }
-            else if (distance <= centi)
+            else if (meters >= kilo)
             {
-                return (Math.Round(distance / tera * decimalOffset) / decimalOffset).ToString() + "cm";
+                return (Math.Round(meters / kilo * decimalOffset) / decimalOffset).ToString() + "km" + suffix;
             }
-            return (Math.Round(distance * decimalOffset) / decimalOffset).ToString() + "m";
+            return (Math.Round(meters * decimalOffset) / decimalOffset).ToString() + "m" + suffix;
+        }
+
+        public static string SecondsToFormattedString(double seconds, int decimals = 0)
+        {
+            double decimalOffset = Math.Pow(10, decimals);
+            if(seconds >= year)
+            {
+                return (Math.Round(seconds / year * decimalOffset) / decimalOffset).ToString() + " years";
+            }
+            else if(seconds >= day)
+            {
+                return (Math.Round(seconds / day * decimalOffset) / decimalOffset).ToString() + " days";
+            }
+            else if(seconds >= hour)
+            {
+                return (Math.Round(seconds / hour * decimalOffset) / decimalOffset).ToString() + " hours";
+            }
+            else if(seconds >= minute)
+            {
+                return (Math.Round(seconds / minute * decimalOffset) / decimalOffset).ToString() + " minutes";
+            }
+            return (Math.Round(seconds * decimalOffset) / decimalOffset).ToString() + " seconds";
         }
 
         public static Vector3d ToVector3d(this Vector3 vector)
