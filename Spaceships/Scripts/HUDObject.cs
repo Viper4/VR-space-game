@@ -66,17 +66,18 @@ public class HUDObject : MonoBehaviour
         // right: (0, 0)
         // bottom: (0, 1)
         // left: (1, 1)
-        // so when their positions are set to be the corners of the target bounding box, they will fit together nicely.
 
+        Vector3 min = bounds.min;
+        Vector3 max = bounds.max;
         Vector3[] worldCorners = new Vector3[] {
-            bounds.min,
-            bounds.max,
-            new Vector3(bounds.min.x, bounds.min.y, bounds.max.z),
-            new Vector3(bounds.min.x, bounds.max.y, bounds.min.z),
-            new Vector3(bounds.max.x, bounds.min.y, bounds.min.z),
-            new Vector3(bounds.min.x, bounds.max.y, bounds.max.z),
-            new Vector3(bounds.max.x, bounds.min.y, bounds.max.z),
-            new Vector3(bounds.max.x, bounds.max.y, bounds.min.z),
+            min,
+            max,
+            new Vector3(min.x, min.y, max.z),
+            new Vector3(min.x, max.y, min.z),
+            new Vector3(max.x, min.y, min.z),
+            new Vector3(min.x, max.y, max.z),
+            new Vector3(max.x, min.y, max.z),
+            new Vector3(max.x, max.y, min.z),
         };
 
         Vector2 firstScreenPosition = FlatCamera.instance.WorldToScreenPoint(worldCorners[0]);

@@ -91,8 +91,7 @@ public class CelestialBody : MonoBehaviour
         return radius != -1;
     }
 
-    /* Orbital velocity derivation
-     * shipMass * g = (shipMass * v^2) / distance
+    /* shipMass * g = (shipMass * v^2) / distance
      * v = sqrt(distance * g)
      */
     IEnumerator SetOrbitalVelocity()
@@ -105,7 +104,7 @@ public class CelestialBody : MonoBehaviour
         double distance = Vector3d.Distance(scaledTransform.position, systemCenter.scaledTransform.position);
         Vector3d orbitVelocity = Math.Sqrt(distance * g) * perpendicular;
 
-        if (physicsHandler != null)
+        if (physicsHandler != null && physicsHandler.active)
         {
             physicsHandler.velocity = orbitVelocity;
         }
@@ -130,35 +129,24 @@ public class CelestialBody : MonoBehaviour
                     {
                         generator.UpdateQuadTrees(transformInGravity.GetComponent<Camera>());
                     }
-                    if (gravity && transformInGravity.TryGetComponent<Rigidbody>(out var rigidbody))
+                    if (gravity)
                     {
                         Vector3 gravityDirection = (scaledTransform.position.ToVector3() - transformInGravity.position).normalized;
-                        /* Acceleration derivation
-                         * surfaceGravity = bodyMass / radius^2
-                         * bodyMass = surfaceGravity * radius^2
-                         * shipMass * g = (bodyMass * shipMass) / distance^2
-                         * g = bodyMass / distance^2
-                         * g = (surfaceGravity * radius^2) / distance^2
-                         */
-                        if (transformInGravity.TryGetComponent<ScaledTransform>(out var otherScaledTransform))
+                        Vector3d realPosition = transformInGravity.TryGetComponent<ScaledTransform>(out var otherScaledTransform) ? otherScaledTransform.position : transformInGravity.position.ToVector3d();
+                        if (transformInGravity.TryGetComponent<PhysicsHandler>(out var otherPhysicsHandler))
                         {
-                            if(transformInGravity.TryGetComponent<PhysicsHandler>(out var otherPhysicsHandler) && otherPhysicsHandler.active)
-                            {
-                                Vector3d acceleration = gravityDirection.ToVector3d() * CalculateGravityAcceleration(otherScaledTransform.position);
-                                otherPhysicsHandler.AddForce(acceleration, ForceMode.Acceleration);
-                            }
-                            else if (!rigidbody.isKinematic)
-                            {
-                                rigidbody.AddForce(gravityDirection * (float)CalculateGravityAcceleration(otherScaledTransform.position), ForceMode.Acceleration);
-                            }
+                            if(!otherPhysicsHandler.isKinematic)
+                                otherPhysicsHandler.AddForce(gravityDirection.ToVector3d() * CalculateGravityAcceleration(realPosition), ForceMode.Acceleration);
                         }
-                        else if (!rigidbody.isKinematic)
+                        else if (transformInGravity.TryGetComponent<Rigidbody>(out var otherRigidbody))
                         {
-                            rigidbody.AddForce(gravityDirection * CalculateGravityAcceleration(transformInGravity.position), ForceMode.Acceleration);
+                            if(!otherRigidbody.isKinematic)
+                                otherRigidbody.AddForce(gravityDirection * (float)CalculateGravityAcceleration(realPosition), ForceMode.Acceleration);
                         }
-                        if (gravitySettings.autoOrient && transformInGravity.HasTag("AutoOrient") && (transformInGravity.position - scaledTransform.position.ToVector3()).sqrMagnitude < sqrFieldRadius)
+
+                        if (gravitySettings.autoOrient && transformInGravity.HasTag("AutoOrient") && (realPosition - scaledTransform.position).sqrMagnitude < sqrFieldRadius)
                         {
-                            transformInGravity.rotation = Quaternion.Slerp(transformInGravity.rotation, Quaternion.FromToRotation(-transformInGravity.up, gravityDirection) * transformInGravity.rotation, gravitySettings.autoOrientSpeed * Time.deltaTime);
+                            transformInGravity.rotation = Quaternion.Slerp(transformInGravity.rotation, Quaternion.FromToRotation(-transformInGravity.up, gravityDirection) * transformInGravity.rotation, gravitySettings.autoOrientSpeed * Time.fixedDeltaTime);
                         }
                     }
                 }
@@ -166,13 +154,14 @@ public class CelestialBody : MonoBehaviour
         }
     }
 
+    
+    /* surfaceGravity = bodyMass / radius^2
+     * bodyMass = surfaceGravity * radius^2
+     * shipMass * g = (bodyMass * shipMass) / distance^2
+     * g = (surfaceGravity * radius^2) / distance^2
+     */
     public double CalculateGravityAcceleration(Vector3d point)
     {
         return surfaceGravity * radius * radius / (scaledTransform.position - point).sqrMagnitude;
-    }
-
-    public float CalculateGravityAcceleration(Vector3 point)
-    {
-        return surfaceGravity * radius * radius / (scaledTransform.position.ToVector3() - point).sqrMagnitude;
     }
 }

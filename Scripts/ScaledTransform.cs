@@ -40,8 +40,8 @@ public class ScaledTransform : MonoBehaviour
     [SerializeField] CelestialBody celestialBody;
     PhysicsHandler physicsHandler;
     public double scaleFactor = 1000;
-    public double worldSpaceThreshold = 6100;
-    public double scaledSpaceThreshold = 5900;
+    public double worldSpaceThreshold = 5900;
+    public double scaledSpaceThreshold = 6100;
     [SerializeField] int worldLayer;
     [SerializeField] int scaledLayer;
 

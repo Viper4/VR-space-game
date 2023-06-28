@@ -62,8 +62,8 @@ MonoBehaviour:
   floatingOrigin: {fileID: 0}
   celestialBody: {fileID: 6135734291481996254}
   scaleFactor: 60000
-  worldSpaceThreshold: 80050
-  scaledSpaceThreshold: 79950
+  worldSpaceThreshold: 79950
+  scaledSpaceThreshold: 80050
   worldLayer: 0
   scaledLayer: 12
 --- !u!114 &283814721084321443

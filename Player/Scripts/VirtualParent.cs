@@ -8,7 +8,7 @@ public class VirtualParent : MonoBehaviour
     [SerializeField] bool position;
     [SerializeField] bool rotation;
 
-    void FixedUpdate()
+    void Update()
     {
         if(parent != null)
         {

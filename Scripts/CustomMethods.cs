@@ -886,6 +886,7 @@ namespace SpaceStuff
         private const double giga = 1e9;
         private const double astronomicalUnit = 1.495978707e11;
         private const double lightYear = 9.46073e15;
+        private const double c = 2.99792458e8;
 
         private const int minute = 60;
         private const int hour = 3600;
@@ -984,31 +985,51 @@ namespace SpaceStuff
             return (value - min) / (max - min);
         }
 
-        // Assuming units in meters or m/s
-        public static string MetersToFormattedString(double meters, int decimals = 0, string suffix = "")
+        // Assuming units in meters
+        public static string DistanceToFormattedString(double distance, int decimals = 0)
         {
             double decimalOffset = Math.Pow(10, decimals);
-            if(meters >= lightYear)
+            if(distance >= lightYear)
             {
-                return (Math.Round(meters / lightYear * decimalOffset) / decimalOffset).ToString() + "ly";
+                return (Math.Round(distance / lightYear * decimalOffset) / decimalOffset).ToString() + "ly";
             }
-            else if(meters >= astronomicalUnit)
+            else if(distance >= astronomicalUnit)
             {
-                return (Math.Round(meters / astronomicalUnit * decimalOffset) / decimalOffset).ToString() + "AU";
+                return (Math.Round(distance / astronomicalUnit * decimalOffset) / decimalOffset).ToString() + "AU";
             }
-            else if (meters >= giga)
+            else if (distance >= giga)
             {
-                return (Math.Round(meters / giga * decimalOffset) / decimalOffset).ToString() + "Gm" + suffix;
+                return (Math.Round(distance / giga * decimalOffset) / decimalOffset).ToString() + "Gm";
             }
-            else if (meters >= mega)
+            else if(distance >= mega)
             {
-                return (Math.Round(meters / mega * decimalOffset) / decimalOffset).ToString() + "Mm" + suffix;
+                return (Math.Round(distance / mega * decimalOffset) / decimalOffset).ToString() + "Mm";
             }
-            else if (meters >= kilo)
+            else if(distance >= kilo)
             {
-                return (Math.Round(meters / kilo * decimalOffset) / decimalOffset).ToString() + "km" + suffix;
+                return (Math.Round(distance / kilo * decimalOffset) / decimalOffset).ToString() + "km";
             }
-            return (Math.Round(meters * decimalOffset) / decimalOffset).ToString() + "m" + suffix;
+            return (Math.Round(distance * decimalOffset) / decimalOffset).ToString() + "m";
+        }
+
+        // Assuming units in m/s
+        public static string SpeedToFormattedString(double speed, int decimals = 0)
+        {
+            double decimalOffset = Math.Pow(10, decimals);
+
+            if (Math.Abs(speed) >= c)
+            {
+                return (Math.Round(speed / c * decimalOffset) / decimalOffset).ToString() + "c";
+            }
+            else if (Math.Abs(speed) >= mega)
+            {
+                return (Math.Round(speed / mega * decimalOffset) / decimalOffset).ToString() + "Mm/s";
+            }
+            else if (Math.Abs(speed) >= kilo)
+            {
+                return (Math.Round(speed / kilo * decimalOffset) / decimalOffset).ToString() + "km/s";
+            }
+            return (Math.Round(speed * decimalOffset) / decimalOffset).ToString() + "m/s";
         }
 
         public static string SecondsToFormattedString(double seconds, int decimals = 0)

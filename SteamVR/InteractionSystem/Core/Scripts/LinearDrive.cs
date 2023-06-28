@@ -17,8 +17,8 @@ namespace Valve.VR.InteractionSystem
 		public Transform endPosition;
 		public LinearMapping linearMapping;
 		public bool repositionGameObject = true;
-		public bool maintainMomemntum = true;
-		public float momemtumDampenRate = 5.0f;
+		public bool maintainMomentum = true;
+		public float momentumDampenRate = 5.0f;
 
         protected Hand.AttachmentFlags attachmentFlags = Hand.AttachmentFlags.DetachFromOtherHand;
 
@@ -131,10 +131,10 @@ namespace Valve.VR.InteractionSystem
 
 		protected virtual void Update()
         {
-            if ( maintainMomemntum && mappingChangeRate != 0.0f )
+            if ( maintainMomentum && mappingChangeRate != 0.0f )
 			{
 				//Dampen the mapping change rate and apply it to the mapping
-				mappingChangeRate = Mathf.Lerp( mappingChangeRate, 0.0f, momemtumDampenRate * Time.deltaTime );
+				mappingChangeRate = Mathf.Lerp( mappingChangeRate, 0.0f, momentumDampenRate * Time.deltaTime );
 				linearMapping.value = Mathf.Clamp01( linearMapping.value + ( mappingChangeRate * Time.deltaTime ) );
 
 				if ( repositionGameObject )

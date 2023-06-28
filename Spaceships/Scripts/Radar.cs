@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using SpaceStuff;
+using System;
 
 public class Radar : MonoBehaviour
 {
@@ -77,8 +78,7 @@ public class Radar : MonoBehaviour
                     {
                         Vector3 direction;
                         double distance;
-                        ScaledTransform scaledTransform;
-                        if(collider.TryGetComponent(out scaledTransform))
+                        if(collider.TryGetComponent<ScaledTransform>(out var scaledTransform))
                         {
                             distance = Vector3d.Distance(ship.position.ToVector3d(), scaledTransform.position);
                             direction = (scaledTransform.position.ToVector3() - ship.position).normalized;
@@ -104,35 +104,67 @@ public class Radar : MonoBehaviour
                                 float HUDDistance = (float)(distance / radarRanges[rangeIndex] * (HUDDistanceMax[rangeIndex] - HUDDistanceMin) + HUDDistanceMin);
                                 Vector3 hudPosition = HUDPivot.position + direction * HUDDistance;
 
-                                double speed = 0;
-                                double colliderVelocityInDirection = 0;
-                                if (collider.TryGetComponent<PhysicsHandler>(out var physicsHandler) && physicsHandler.active)
+                                double colliderSpeed = 0;
+                                double colliderRelativeVelocity = 0;
+                                double colliderRelativeAcceleration = 0; // HOW DO WE DO THIS???
+                                if (collider.TryGetComponent<PhysicsHandler>(out var physicsHandler))
                                 {
-                                    speed = physicsHandler.velocity.magnitude;
-                                    colliderVelocityInDirection = Vector3d.Dot(physicsHandler.velocity, direction.ToVector3d());
+                                    if (!shipPhysicsHandler.isKinematic)
+                                    {
+                                        colliderSpeed = physicsHandler.velocity.magnitude;
+                                        colliderRelativeVelocity = Vector3d.Dot(physicsHandler.velocity, direction.ToVector3d());
+                                    }
                                 }
                                 else if (collider.TryGetComponent<Rigidbody>(out var colliderRigidbody) && !colliderRigidbody.isKinematic)
                                 {
-                                    speed = colliderRigidbody.velocity.magnitude;
-                                    colliderVelocityInDirection = Vector3.Dot(colliderRigidbody.velocity, direction);
+                                    colliderSpeed = colliderRigidbody.velocity.magnitude;
+                                    colliderRelativeVelocity = Vector3.Dot(colliderRigidbody.velocity, direction);
                                 }
 
-                                double shipVelocityInDirection = 0;
-                                if (shipPhysicsHandler != null && shipPhysicsHandler.active)
+                                double shipRelativeVelocity = 0;
+                                double shipRelativeAcceleration = 0; // HOW DO WE DO THIS???
+                                if (shipPhysicsHandler != null)
                                 {
-                                    shipVelocityInDirection = Vector3d.Dot(shipPhysicsHandler.velocity, direction.ToVector3d());
+                                    if(!shipPhysicsHandler.isKinematic)
+                                        shipRelativeVelocity = Vector3d.Dot(shipPhysicsHandler.velocity, direction.ToVector3d());
                                 }
                                 else if (shipRigidbody != null && !shipRigidbody.isKinematic)
                                 {
-                                    shipVelocityInDirection = Vector3.Dot(shipRigidbody.velocity, direction);
+                                    shipRelativeVelocity = Vector3.Dot(shipRigidbody.velocity, direction);
                                 }
 
-                                string timeToArrive = colliderVelocityInDirection > shipVelocityInDirection ? "Never" : CustomMethods.SecondsToFormattedString(distance / (shipVelocityInDirection - colliderVelocityInDirection), 2);
+                                double travelTime = -1;
+                                double b = shipRelativeVelocity - colliderRelativeVelocity;
+                                if (shipRelativeAcceleration > colliderRelativeAcceleration)
+                                {
+                                    // Quadratic formula x = (-b +/-sqrt(b^2 - 4ac)) / 2a
+                                    double a = shipRelativeAcceleration - colliderRelativeAcceleration;
+                                    double discriminant = b * b - 2 * a * distance;
+                                    if (discriminant > 0)
+                                    {
+                                        double sqrt = Math.Sqrt(discriminant);
+                                        double firstRoot = (-b + sqrt) / a;
+                                        if (firstRoot > 0)
+                                            travelTime = firstRoot;
+                                        else
+                                            travelTime = (-b - sqrt) / a;
+                                    }
+                                    else if (discriminant == 0)
+                                    {
+                                        travelTime = -b / a;
+                                    }
+                                }
+                                else if (shipRelativeAcceleration == colliderRelativeAcceleration && b < 0)
+                                {
+                                    travelTime = distance / b;
+                                }
+
+                                string ETA = travelTime == -1 ? "Never" : CustomMethods.SecondsToFormattedString(travelTime, 2);
                                 string hudText = "<style=RadarHUD>" + collider.transform.name.ToUpper() + "</style>" +
-                                    "\nDistance: " + CustomMethods.MetersToFormattedString(distance, 2) +
-                                    "\nSpeed: " + CustomMethods.MetersToFormattedString(speed, 2, "/s") +
-                                    "\nClosing Velocity: " + CustomMethods.MetersToFormattedString(colliderVelocityInDirection - shipVelocityInDirection, 2, "/s") +
-                                    "\nETA: " + timeToArrive;
+                                    "\nDistance: " + CustomMethods.DistanceToFormattedString(distance, 2) +
+                                    "\nSpeed: " + CustomMethods.SpeedToFormattedString(colliderSpeed, 2) +
+                                    "\nClosing Velocity: " + CustomMethods.SpeedToFormattedString(b, 2) +
+                                    "\nETA: " + ETA;
 
                                 if (instanceIDHUDPair.TryGetValue(instanceID, out HUDObject hudObject))
                                 {
@@ -163,7 +195,7 @@ public class Radar : MonoBehaviour
                                 Vector3 radarPosition = hologram.position + (direction * (float)(distance / radarRanges[rangeIndex] * 0.5));
                                 if (instanceIDIconPair.TryGetValue(instanceID, out RadarIcon icon))
                                 {
-                                    icon.UpdateIcon(radarPosition, collider.transform.rotation, collider.transform.name + "\n" + CustomMethods.MetersToFormattedString(distance, 2));
+                                    icon.UpdateIcon(radarPosition, collider.transform.rotation, collider.transform.name.ToUpper() + "\n" + CustomMethods.DistanceToFormattedString(distance, 2));
                                 }
                                 else
                                 {
@@ -196,7 +228,7 @@ public class Radar : MonoBehaviour
                                             break;
                                     }
 
-                                    newIcon.Init(this, instanceID, radarPosition, collider.transform.rotation, iconColor, iconEmission, collider.transform.name + "\n" + CustomMethods.MetersToFormattedString(distance, 2));
+                                    newIcon.Init(this, instanceID, radarPosition, collider.transform.rotation, iconColor, iconEmission, collider.transform.name + "\n" + CustomMethods.DistanceToFormattedString(distance, 2));
                                     instanceIDIconPair.Add(instanceID, newIcon);
                                 }
                             }

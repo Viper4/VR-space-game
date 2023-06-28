@@ -43,7 +43,7 @@ public class SpaceLight : MonoBehaviour
         float sqrDistance = difference.sqrMagnitude;
         worldLight.intensity = (float)(luminosity / sqrDistance);
         if (scaledTransform.inScaledSpace)
-            worldLight.shadows = LightShadows.Hard;
+            worldLight.shadows = LightShadows.Soft;
         else
             worldLight.shadows = LightShadows.None;
     }

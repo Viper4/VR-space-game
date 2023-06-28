@@ -355,7 +355,7 @@ MonoBehaviour:
   rotatingObject: {fileID: 2981506058383095860}
   minAngles: {x: -60, y: 0, z: 0}
   maxAngles: {x: 35, y: 0, z: 0}
-  rotateSpeed: 2
+  rotateSpeed: 3.5
   shootAngle: 1
   fireRate: 0.15
   bulletPrefab: {fileID: 1854897518929172335, guid: 5a4106b8d91f4264ab29f60002a2c671,

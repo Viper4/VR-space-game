@@ -102,9 +102,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 0}
-  detonationDistance: 5
+  detonationDistance: 10
   propulsionForce: 10
-  translationForce: 50
+  translationForce: 5
   rotationForce: 2
   p: 0
   i: 0
