@@ -10,7 +10,8 @@ public class FilterSettings
         Simplex,
         Ridge,
         Perlin,
-        Crater
+        Crater,
+        Valley
     }
     public FilterType filterType;
 
@@ -18,6 +19,7 @@ public class FilterSettings
     [ConditionalHide("filterType", 1)] public RidgeNoiseSettings ridgeNoiseSettings;
     [ConditionalHide("filterType", 2)] public PerlinNoiseSettings perlinNoiseSettings;
     [ConditionalHide("filterType", 3)] public CraterSettings craterSettings;
+    [ConditionalHide("filterType", 4)] public ValleyNoiseSettings valleyNoiseSettings;
 
     public class BaseSettings
     {
@@ -61,5 +63,11 @@ public class FilterSettings
         public float sizeDistribution = 1;
         public float ridgeHeight = 0.1f;
         public float ridgeWidth = 0.1f;
+    }
+
+    [System.Serializable]
+    public class ValleyNoiseSettings : SimplexNoiseSettings
+    {
+        public float weightMultiplier = 1;
     }
 }

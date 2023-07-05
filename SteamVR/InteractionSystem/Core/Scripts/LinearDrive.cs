@@ -19,8 +19,10 @@ namespace Valve.VR.InteractionSystem
 		public bool repositionGameObject = true;
 		public bool maintainMomentum = true;
 		public float momentumDampenRate = 5.0f;
+		[SerializeField] bool handControlled = true;
+		[SerializeField] float increment = 0.01f;
 
-        protected Hand.AttachmentFlags attachmentFlags = Hand.AttachmentFlags.DetachFromOtherHand;
+		protected Hand.AttachmentFlags attachmentFlags = Hand.AttachmentFlags.DetachFromOtherHand;
 
         protected float initialMappingOffset;
         protected int numMappingChangeSamples = 5;
@@ -60,31 +62,38 @@ namespace Valve.VR.InteractionSystem
 
         protected virtual void HandHoverUpdate( Hand hand )
         {
-            GrabTypes startingGrabType = hand.GetGrabStarting();
-
-            if (interactable.attachedToHand == null && startingGrabType != GrabTypes.None)
+            if (handControlled)
             {
-                initialMappingOffset = linearMapping.value - CalculateLinearMapping( hand.transform );
-				sampleCount = 0;
-				mappingChangeRate = 0.0f;
+				GrabTypes startingGrabType = hand.GetGrabStarting();
 
-                hand.AttachObject(gameObject, startingGrabType, attachmentFlags);
-            }
+				if (interactable.attachedToHand == null && startingGrabType != GrabTypes.None)
+				{
+					initialMappingOffset = linearMapping.value - CalculateLinearMapping(hand.transform);
+					sampleCount = 0;
+					mappingChangeRate = 0.0f;
+
+					hand.AttachObject(gameObject, startingGrabType, attachmentFlags);
+				}
+			}
 		}
 
         protected virtual void HandAttachedUpdate(Hand hand)
         {
-            UpdateLinearMapping(hand.transform);
+			if (handControlled)
+			{
+				UpdateLinearMapping(hand.transform);
 
-            if (hand.IsGrabEnding(this.gameObject))
-            {
-                hand.DetachObject(gameObject);
-            }
+				if (hand.IsGrabEnding(this.gameObject))
+				{
+					hand.DetachObject(gameObject);
+				}
+			}
         }
 
         protected virtual void OnDetachedFromHand(Hand hand)
         {
-            CalculateMappingChangeRate();
+			if(handControlled)
+				CalculateMappingChangeRate();
         }
 
 
@@ -103,7 +112,31 @@ namespace Valve.VR.InteractionSystem
 			}
 		}
 
-        protected void UpdateLinearMapping( Transform updateTransform )
+		public void Increment()
+        {
+			UpdateLinearMapping(linearMapping.value + increment);
+        }
+
+		public void Decrement()
+        {
+			UpdateLinearMapping(linearMapping.value - increment);
+        }
+
+		public void UpdateLinearMapping(float value)
+		{
+			prevMapping = linearMapping.value;
+			linearMapping.value = Mathf.Clamp01(initialMappingOffset + value);
+
+			mappingChangeSamples[sampleCount % mappingChangeSamples.Length] = (1.0f / Time.deltaTime) * (linearMapping.value - prevMapping);
+			sampleCount++;
+
+			if (repositionGameObject)
+			{
+				transform.position = Vector3.Lerp(startPosition.position, endPosition.position, linearMapping.value);
+			}
+		}
+
+		protected void UpdateLinearMapping( Transform updateTransform )
 		{
 			prevMapping = linearMapping.value;
 			linearMapping.value = Mathf.Clamp01( initialMappingOffset + CalculateLinearMapping( updateTransform ) );

@@ -32,8 +32,13 @@ public class CelestialBodyGeneratorEditor : Editor
             celestialBody.GenerateRandomCelestialBody();
         }
 
-        DrawSettingsEditor(celestialBody.shapeSettings, celestialBody.OnShapeSettingsUpdated, ref celestialBody.shapeSettingsFoldout, ref shapeEditor);
-        DrawSettingsEditor(celestialBody.colorSettings, celestialBody.OnColorSettingsUpdated, ref celestialBody.colorSettingsFoldout, ref colorEditor);
+        if (GUILayout.Button("Generate Colors")) 
+        {
+            celestialBody.GenerateColors();
+        }
+
+        DrawSettingsEditor(celestialBody.originalShapeSettings, celestialBody.OnShapeSettingsUpdated, ref celestialBody.shapeSettingsFoldout, ref shapeEditor);
+        DrawSettingsEditor(celestialBody.originalColorSettings, celestialBody.OnColorSettingsUpdated, ref celestialBody.colorSettingsFoldout, ref colorEditor);
     }
 
     void DrawSettingsEditor(Object settings, System.Action onSettingsUpdated, ref bool foldout, ref Editor editor)

@@ -101,12 +101,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cdcd49df3d6f1744d928678c582bb52a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  target: {fileID: 0}
   detonationDistance: 10
   propulsionForce: 10
   translationForce: 5
   rotationForce: 2
-  p: 0
+  p: 1
   i: 0
   d: 0
 --- !u!136 &2688048666450355157

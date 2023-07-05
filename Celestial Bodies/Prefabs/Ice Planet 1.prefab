@@ -50,7 +50,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 660b2028be04cb445a20efd3df3e65c9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  inScaledSpace: 1
+  inScaledSpace: 0
   _position:
     x: 0
     y: 0
@@ -78,16 +78,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e09938fc50d6944a93e317132424199, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  targetCamera: {fileID: 0}
   autoUpdate: 0
   renderMask: 0
+  originalShapeSettings: {fileID: 11400000, guid: 2c7bccb9b1511d54cb72ab648670d268,
+    type: 2}
   shapeSettings: {fileID: 11400000, guid: 2c7bccb9b1511d54cb72ab648670d268, type: 2}
+  originalColorSettings: {fileID: 11400000, guid: 87f5b83d624a7824d8079633d4556819,
+    type: 2}
   colorSettings: {fileID: 11400000, guid: 87f5b83d624a7824d8079633d4556819, type: 2}
   cloneSettings: 1
   shapeSettingsFoldout: 1
   colorSettingsFoldout: 1
   rootLOD: 2
-  seedRange: {x: -9999, y: 9999}
+  seedRange: {x: -10000, y: 10000}
   forceGenerateMeshColliders: 0
 --- !u!114 &1208913255037145551
 MonoBehaviour:
@@ -147,7 +150,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e67c9a4f7bd32b64e98f85e426f57e36, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _isKinematic: 0
+  attachedRigidbody: {fileID: 0}
+  lowerVelocityThreshold: -1
+  upperVelocityThreshold: -1
   velocity:
+    x: 0
+    y: 0
+    z: 0
+  angularVelocity:
     x: 0
     y: 0
     z: 0

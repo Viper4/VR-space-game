@@ -22,7 +22,7 @@ public class TerrainChunk
         this.shapeGenerator = shapeGenerator;
         filterResolution = settings.meshFilterResolution;
         colliderResolution = settings.complexMeshCollider ? settings.meshColliderResolution : ShapeSettings.simpleMeshColliderSize;
-        width = settings.radius / rootLOD;
+        width = 1 / rootLOD;
         maxLOD = settings.levelOfDetail;
         detailLevel = 0;
         this.localUp = localUp;
@@ -49,8 +49,7 @@ public class TerrainChunk
 
     private Vector3 GetPointOnCubeSphere(Vector2 percent)
     {
-        /*
-        Vector3 pointOnUnitCube = position + (2 * (percent.x - 0.5f) * localRight + 2 * (percent.y - 0.5f) * localForward) * offset;
+        /*Vector3 pointOnUnitCube = localPosition + (2 * (percent.x - 0.5f) * localRight + 2 * (percent.y - 0.5f) * localForward);
         float x2 = pointOnUnitCube.x * pointOnUnitCube.x;
         float y2 = pointOnUnitCube.y * pointOnUnitCube.y;
         float z2 = pointOnUnitCube.z * pointOnUnitCube.z;
@@ -58,8 +57,7 @@ public class TerrainChunk
         pointOnUnitSphere.x = pointOnUnitCube.x * Mathf.Sqrt(1f - y2 / 2f - z2 / 2f + y2 * z2 / 3f);
         pointOnUnitSphere.y = pointOnUnitCube.y * Mathf.Sqrt(1f - x2 / 2f - z2 / 2f + x2 * z2 / 3f);
         pointOnUnitSphere.z = pointOnUnitCube.z * Mathf.Sqrt(1f - x2 / 2f - y2 / 2f + x2 * y2 / 3f);
-        return pointOnUnitSphere;
-        */
+        return pointOnUnitSphere;*/
 
         Vector3 pointOnUnitCube = localPosition + (2f * (percent.x - 0.5f) * localRight + 2f * (percent.y - 0.5f) * localForward);
         return pointOnUnitCube.normalized;
@@ -78,8 +76,7 @@ public class TerrainChunk
         {
             for (int x = 0; x < filterResolution; x++)
             {
-                Vector3 pointOnUnitSphere = GetPointOnCubeSphere(new Vector2(x, y) / (filterResolution - 1));
-                vertices[i] = shapeGenerator.CalculatePointOnSphere(pointOnUnitSphere);
+                vertices[i] = shapeGenerator.CalculatePointOnSphere(GetPointOnCubeSphere(new Vector2(x, y) / (filterResolution - 1)));
 
                 if (x != filterResolution - 1 && y != filterResolution - 1)
                 {
@@ -159,8 +156,9 @@ public class TerrainChunk
         {
             for (int x = 0; x < filterResolution; x++)
             {
-                uv[i] = new Vector2(colorGenerator.BiomePercentFromPoint(GetPointOnCubeSphere(new Vector2(x, y) / (filterResolution - 1))), 0);
-
+                Vector3 vertexPosition = GetPointOnCubeSphere(new Vector2(x, y) / (filterResolution - 1));
+                uv[i] = new Vector2(x, y);
+                //uv[i] = new Vector2(colorGenerator.BiomePercentFromPoint(GetPointOnCubeSphere(new Vector2(x, y) / (filterResolution - 1))), 0);
                 i++;
             }
         }
@@ -174,7 +172,7 @@ public class TerrainChunk
             sqrDistance = chunkObject == null ? (parent.TransformPoint(shapeGenerator.CalculatePointOnSphere(GetPointOnCubeSphere(new Vector2(0.5f, 0.5f)))) - camera.transform.position).sqrMagnitude : chunkObject.meshRenderer.bounds.SqrDistance(camera.transform.position);
         if (camera != null && detailLevel >= 0 && detailLevel < maxLOD && sqrDistance < width * width)
         {
-            if(chunkObject != null)
+            if (chunkObject != null)
                 chunkObject.gameObject.SetActive(false);
             children = new TerrainChunk[4];
             float nextWidth = width * 0.5f;
@@ -214,11 +212,12 @@ public class TerrainChunk
 
     /* 
      * Doesn't generate chunks already created and enables mesh depending on if mesh is visible by camera
-     * Should only be called when camera is not null
      */
     public void UpdateTree(Camera camera, Transform parent, ColorGenerator colorGenerator)
     {
-        float sqrDistance = chunkObject == null ? (parent.TransformPoint(shapeGenerator.CalculatePointOnSphere(GetPointOnCubeSphere(new Vector2(0.5f, 0.5f)))) - camera.transform.position).sqrMagnitude : chunkObject.meshRenderer.bounds.SqrDistance(camera.transform.position);
+        float sqrDistance = 0;
+        if (camera != null)
+            sqrDistance = chunkObject == null ? (parent.TransformPoint(shapeGenerator.CalculatePointOnSphere(GetPointOnCubeSphere(new Vector2(0.5f, 0.5f)))) - camera.transform.position).sqrMagnitude : chunkObject.meshRenderer.bounds.SqrDistance(camera.transform.position);
         if (camera != null && detailLevel >= 0 && detailLevel < maxLOD && sqrDistance < width * width)
         {
             if(chunkObject != null)

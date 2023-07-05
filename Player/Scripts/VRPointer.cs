@@ -21,7 +21,7 @@ public class VRPointer : MonoBehaviour
     // UI
     [SerializeField] SteamVR_Action_Boolean interactUIAction = null;
     Collider previousUIContact;
-    PointerEventData pointerEventData;
+    Vector3 previousPointerPosition;
 
     Switch previousSwitch;
 
@@ -45,11 +45,6 @@ public class VRPointer : MonoBehaviour
         line.gameObject.SetActive(false);
         dot = Instantiate(dotPrefab, attachmentPoint).transform;
         dot.gameObject.SetActive(false);
-
-        pointerEventData = new PointerEventData(EventSystem.current)
-        {
-            button = PointerEventData.InputButton.Left,
-        };
     }
 
     // Update is called once per frame
@@ -76,6 +71,13 @@ public class VRPointer : MonoBehaviour
                 {
                     if (hit.collider.transform.parent.TryGetComponent<Selectable>(out var selectable))
                     {
+                        PointerEventData pointerEventData = new PointerEventData(EventSystem.current)
+                        {
+                            button = PointerEventData.InputButton.Left,
+                            delta = hit.point - previousPointerPosition,
+                            position = hit.point,
+                        };
+
                         ShowPointer(new Vector3[] { Vector3.zero, attachmentPoint.InverseTransformPoint(hit.point) });
 
                         if (previousUIContact != hit.collider)
@@ -102,7 +104,7 @@ public class VRPointer : MonoBehaviour
                                     button.OnPointerClick(pointerEventData);
                                     break;
                                 case Slider slider:
-
+                                    slider.OnDrag(pointerEventData);
                                     break;
                                 case Toggle toggle:
                                     toggle.OnPointerClick(pointerEventData);
@@ -115,6 +117,7 @@ public class VRPointer : MonoBehaviour
                                     break;
                             }
                         }
+                        previousPointerPosition = hit.point;
                     }
                 }
                 else
@@ -177,7 +180,7 @@ public class VRPointer : MonoBehaviour
     {
         if (previousUIContact != null)
         {
-            previousUIContact.transform.parent.GetComponent<Selectable>().OnPointerExit(pointerEventData);
+            previousUIContact.transform.parent.GetComponent<Selectable>().OnPointerExit(new PointerEventData(EventSystem.current) { button = PointerEventData.InputButton.Left } );
             previousUIContact = null;
         }
 

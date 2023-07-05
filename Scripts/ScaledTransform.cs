@@ -49,6 +49,7 @@ public class ScaledTransform : MonoBehaviour
     {
         if (celestialBody.TryGetComponent(out physicsHandler))
             physicsHandler.active = inScaledSpace;
+        UpdateTransform();
     }
 
     /*private void FixedUpdate()

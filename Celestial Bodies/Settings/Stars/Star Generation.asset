@@ -14,8 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   simple: 1
   autoGenerate: 1
+  sphere: 1
   random: 1
-  radiusRange: {x: 250000, y: 10000000}
+  scaleRange:
+  - {x: 100000, y: 0, z: 0}
+  - {x: 2000000, y: 0, z: 0}
   sphereField: 0
   calculateMass: 0
   density: 50

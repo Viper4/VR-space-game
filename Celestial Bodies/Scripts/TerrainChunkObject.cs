@@ -38,7 +38,7 @@ public class TerrainChunkObject : MonoBehaviour
         }
     }
 
-    // For detecting colliders entering the chunk and generating/activating mesh collider
+    // Box collider detects colliders entering the chunk and generates/activates the mesh collider
     public void UpdateBoxCollider()
     {
         if(boxCollider == null)

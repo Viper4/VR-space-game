@@ -20,7 +20,7 @@ public class CelestialBody : MonoBehaviour
     public bool gravity = true;
     [HideInInspector] public bool gravitySettingsFoldout;
     [ConditionalHide("gravity")] public GravitySettings gravitySettings;
-    float radius = -1;
+    Vector3 scale = Vector3.zero;
     float gravityRadius;
     float surfaceGravity;
     SphereCollider sphereField;
@@ -33,28 +33,46 @@ public class CelestialBody : MonoBehaviour
         scaledTransform = GetComponent<ScaledTransform>();
         if (TryGetComponent(out generator))
         {
-            radius = generationSettings.random ? Random.Range(generationSettings.radiusRange.x, generationSettings.radiusRange.y) : generator.shapeSettings.radius;
+            if(!generationSettings.random)
+                scale = Vector3.one;
+
             if (generationSettings.autoGenerate)
             {
                 if (generationSettings.random)
-                    generator.GenerateRandomCelestialBody(1f);
+                    generator.GenerateRandomCelestialBody();
                 else
-                    generator.GenerateCelestialBody(1f);
+                    generator.GenerateCelestialBody();
             }
         }
         else
         {
-            if (generationSettings.random)
+            if (!generationSettings.random)
+                scale = transform.localScale;
+        }
+
+        if (generationSettings.random)
+        {
+            float randomX;
+            float randomY;
+            float randomZ;
+            if (generationSettings.sphere)
             {
-                radius = Random.Range(generationSettings.radiusRange.x, generationSettings.radiusRange.y);
+                randomX = randomY = randomZ = Random.Range(generationSettings.scaleRange[0].x, generationSettings.scaleRange[0].x);
             }
             else
             {
-                radius = transform.localScale.x;
+                randomX = Random.Range(generationSettings.scaleRange[0].x, generationSettings.scaleRange[1].x);
+                randomY = Random.Range(generationSettings.scaleRange[0].y, generationSettings.scaleRange[1].y);
+                randomZ = Random.Range(generationSettings.scaleRange[0].z, generationSettings.scaleRange[1].z);
             }
+            scale = new Vector3(randomX, randomY, randomZ);
         }
+
         surfaceGravity = Random.Range(gravitySettings.surfaceGravityRange.x, gravitySettings.surfaceGravityRange.y);
-        scaledTransform.scale = new Vector3d(radius, radius, radius);
+        if (scaledTransform.inScaledSpace)
+            scaledTransform.scale = scale.ToVector3d();
+        else
+            transform.localScale = scale;
 
         if (TryGetComponent(out sphereField))
         {
@@ -64,13 +82,13 @@ public class CelestialBody : MonoBehaviour
         }
         if (gravity)
         {
-            gravityRadius = radius * gravitySettings.gravityRadiusMultiplier;
+            gravityRadius = scale.x * gravitySettings.gravityRadiusMultiplier;
         }
         if (TryGetComponent(out _rigidbody))
         {
             TryGetComponent(out physicsHandler);
             if(generationSettings.calculateMass)
-                _rigidbody.mass = generationSettings.density * v * radius * radius * radius;
+                _rigidbody.mass = generationSettings.density * v * scale.x * scale.x * scale.x;
             if(systemCenter != null)
             {
                 StartCoroutine(SetOrbitalVelocity());
@@ -82,13 +100,13 @@ public class CelestialBody : MonoBehaviour
         }
         if(TryGetComponent<SpaceLight>(out var spaceLight))
         {
-            spaceLight.Init(radius);
+            spaceLight.Init(scale.x);
         }
     }
 
     public bool Initialized()
     {
-        return radius != -1;
+        return scale != Vector3.zero;
     }
 
     /* shipMass * g = (shipMass * v^2) / distance
@@ -162,6 +180,6 @@ public class CelestialBody : MonoBehaviour
      */
     public double CalculateGravityAcceleration(Vector3d point)
     {
-        return surfaceGravity * radius * radius / (scaledTransform.position - point).sqrMagnitude;
+        return surfaceGravity * scale.x * scale.x / (scaledTransform.position - point).sqrMagnitude;
     }
 }

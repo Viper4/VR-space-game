@@ -34,16 +34,16 @@ public class PhysicsHandler : MonoBehaviour
         }
     }
 
-    private bool kinematic;
+    [SerializeField] bool _isKinematic;
     public bool isKinematic
     {
         get
         {
-            return kinematic;
+            return _isKinematic;
         }
         set
         {
-            kinematic = value;
+            _isKinematic = value;
             attachedRigidbody.isKinematic = value;
         }
     }
@@ -64,7 +64,7 @@ public class PhysicsHandler : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (!kinematic)
+        if (!_isKinematic)
         {
             if (_active)
             {
@@ -84,10 +84,10 @@ public class PhysicsHandler : MonoBehaviour
             }
             else
             {
+                Vector3 rigidbodyVelocity = attachedRigidbody.velocity;
+                velocity = rigidbodyVelocity.ToVector3d();
                 if (upperVelocityThreshold != -1)
                 {
-                    Vector3 rigidbodyVelocity = attachedRigidbody.velocity;
-                    velocity = rigidbodyVelocity.ToVector3d();
                     angularVelocity = attachedRigidbody.angularVelocity.ToVector3d();
                     if (Math.Abs(rigidbodyVelocity.x) > upperVelocityThreshold || Math.Abs(rigidbodyVelocity.y) > upperVelocityThreshold || Math.Abs(rigidbodyVelocity.z) > upperVelocityThreshold)
                     {
@@ -100,7 +100,7 @@ public class PhysicsHandler : MonoBehaviour
 
     public void AddForce(Vector3d force, ForceMode forceMode)
     {
-        if (!kinematic)
+        if (!_isKinematic)
         {
             if (_active)
             {
@@ -123,7 +123,7 @@ public class PhysicsHandler : MonoBehaviour
 
     public void AddRelativeForce(Vector3d force, ForceMode forceMode)
     {
-        if (!kinematic)
+        if (!_isKinematic)
         {
             if (_active)
             {
@@ -141,7 +141,7 @@ public class PhysicsHandler : MonoBehaviour
 
     public void AddTorque(Vector3d torque, ForceMode forceMode)
     {
-        if (!kinematic)
+        if (!_isKinematic)
         {
             if (_active)
             {
@@ -153,18 +153,18 @@ public class PhysicsHandler : MonoBehaviour
                     _ => angularVelocity + (torque * Time.fixedDeltaTime / attachedRigidbody.mass),
                 };
                 if (newVelocity.magnitude < speedLimit)
-                    velocity = newVelocity;
+                    angularVelocity = newVelocity;
             }
             else
             {
-                attachedRigidbody.AddForce(torque.ToVector3(), forceMode);
+                attachedRigidbody.AddTorque(torque.ToVector3(), forceMode);
             }
         }
     }
 
     public void AddRelativeTorque(Vector3d torque, ForceMode forceMode)
     {
-        if (!kinematic)
+        if (!_isKinematic)
         {
             if (_active)
             {

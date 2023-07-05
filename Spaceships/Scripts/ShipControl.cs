@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using SpaceStuff;
+using TMPro;
 
 [RequireComponent(typeof(Ship))]
 public class ShipControl : MonoBehaviour
@@ -21,8 +22,6 @@ public class ShipControl : MonoBehaviour
     bool turretControl = false;
     bool autoStabilizeRot = false;
     bool autoStabilizePos = false;
-
-    [SerializeField] Transform cockpit;
 
     [SerializeField] LayerMask targetLayers;
     [SerializeField] Image mainCrosshair;
@@ -45,7 +44,12 @@ public class ShipControl : MonoBehaviour
     PIDController rotationPID;
     PIDController translationPID;
 
-    [SerializeField] Transform targetLockUI;
+    [SerializeField] Material modelMaterial;
+    [SerializeField] Transform targetModelParent;
+    [SerializeField] TextMeshProUGUI targetName;
+    [SerializeField] Transform targetDirectionPivot;
+    Transform targetModel;
+    [SerializeField] Transform targetLockCrosshair;
     Transform selectedTarget;
     Transform lockedTarget;
 
@@ -88,7 +92,7 @@ public class ShipControl : MonoBehaviour
     void LateUpdate()
     {
         Vector3 joystickDirection = Vector3.zero;
-        if (ship.pilot != null)
+        if (ship.isPilot)
         {
             joystickDirection = joystick.direction;
             if (translationMode != 1)
@@ -115,12 +119,13 @@ public class ShipControl : MonoBehaviour
             if (turretControl)
             {
                 mainCrosshair.transform.localPosition = new Vector2(-joystick.direction.z * ship.combatUI.rect.width * 0.5f, -joystick.direction.x * ship.combatUI.rect.height * 0.5f);
-                Vector3 crosshairDirection = mainCrosshair.transform.position - ship.combatUI.position;
+                Vector3 crosshairDirection = mainCrosshair.transform.position - pilotCamera.transform.position;
 
                 if (Physics.Raycast(mainCrosshair.transform.position, crosshairDirection, out RaycastHit hit, Mathf.Infinity, targetLayers))
                 {
                     if (hit.transform.HasTag("RadarTarget"))
                     {
+                        Debug.Log(hit.transform);
                         selectedTarget = hit.transform;
                     }
                     Debug.DrawLine(mainCrosshair.transform.position, hit.point, Color.green, 0.1f);
@@ -182,11 +187,30 @@ public class ShipControl : MonoBehaviour
 
             if(lockedTarget != null)
             {
+                targetName.text = lockedTarget.name;
+                targetModel.rotation = lockedTarget.rotation;
+                if(TryGetComponent<PhysicsHandler>(out var targetPhysicsHandler))
+                {
+                    if(targetPhysicsHandler.velocity != Vector3d.zero)
+                        targetDirectionPivot.rotation = Quaternion.LookRotation(targetPhysicsHandler.velocity.ToVector3(), lockedTarget.up);
+                }
+                else if (TryGetComponent<Rigidbody>(out var targetRigidbody))
+                {
+                    if(targetRigidbody.velocity != Vector3.zero)
+                        targetDirectionPivot.rotation = Quaternion.LookRotation(targetRigidbody.velocity, lockedTarget.up);
+                }
+
                 if (RectTransformUtility.ScreenPointToWorldPointInRectangle(ship.combatUI, pilotCamera.WorldToScreenPoint(lockedTarget.position), pilotCamera, out Vector3 crosshairPosition))
                 {
-                    targetLockUI.position = crosshairPosition;
+                    targetLockCrosshair.position = crosshairPosition;
                 }
-                targetLockUI.rotation = Quaternion.LookRotation(pilotCamera.transform.position - targetLockUI.position, FlatCamera.instance.transform.up);
+                targetLockCrosshair.rotation = Quaternion.LookRotation(pilotCamera.transform.position - targetLockCrosshair.position, FlatCamera.instance.transform.up);
+            }
+            else if (targetModel != null)
+            {
+                Destroy(targetModel.gameObject);
+                targetName.text = "NO TARGET";
+                targetModelParent.gameObject.SetActive(false);
             }
         }
         
@@ -200,7 +224,7 @@ public class ShipControl : MonoBehaviour
             float torqueCorrectionZ = Mathf.Clamp(-rotationPID.GetOutput(ship.physicsHandler.attachedRigidbody.angularVelocity.z, Time.deltaTime), -rotationForce, rotationForce);
             ship.physicsHandler.AddTorque(new Vector3d(torqueCorrectionX, torqueCorrectionY, torqueCorrectionZ) * rotationForce, ForceMode.Acceleration);
         }
-        if (autoStabilizePos && throttle.value == 0 && joystickDirection == Vector3.zero)
+        if (autoStabilizePos && throttle.value == 0 && (translationMode == 1 || joystickDirection == Vector3.zero))
         {
             float forceCorrectionX = Mathf.Clamp(-translationPID.GetOutput((float)ship.physicsHandler.velocity.x, Time.deltaTime), -translationForce, translationForce);
             float forceCorrectionY = Mathf.Clamp(-translationPID.GetOutput((float)ship.physicsHandler.velocity.y, Time.deltaTime), -translationForce, translationForce);
@@ -257,7 +281,7 @@ public class ShipControl : MonoBehaviour
             {
                 if (torpedoPoints[i].hasTorpedo)
                 {
-                    torpedoPoints[i].LaunchTorpedo(lockedTarget, i);
+                    torpedoPoints[i].LaunchTorpedo(ship.physicsHandler.velocity.ToVector3(), lockedTarget, i);
                     ship.UpdateTorpedoUI(i, false);
                     break;
                 }
@@ -267,10 +291,37 @@ public class ShipControl : MonoBehaviour
 
     private void LockTarget()
     {
+        if(targetModel != null)
+            Destroy(targetModel.gameObject);
+        targetName.text = "NO TARGET";
         if (turretControl)
         {
+            Debug.Log("Locked Target: " + selectedTarget.name);
             lockedTarget = selectedTarget;
-            targetLockUI.gameObject.SetActive(lockedTarget != null);
+            targetModelParent.gameObject.SetActive(lockedTarget != null);
+            targetLockCrosshair.gameObject.SetActive(lockedTarget != null);
+
+            GameObject newTargetModel;
+            if (lockedTarget.HasTag("Ship"))
+            {
+                newTargetModel = Instantiate(GlobalData.instance.shipModels[lockedTarget.GetComponent<Ship>().ID], targetModelParent, false);
+            }
+            else
+            {
+                newTargetModel = CustomMethods.GenerateModel(lockedTarget.gameObject, 2, modelMaterial, 1); // 2 is Ignore Raycast layer
+                newTargetModel.transform.localScale = new Vector3(5, 5, 5);
+            }
+
+            newTargetModel.name = "Target Model";
+            targetModel = newTargetModel.transform;
+            targetModel.SetParent(targetModelParent);
+            targetModel.localPosition = Vector3.zero;
+        }
+        else
+        {
+            lockedTarget = null;
+            targetModelParent.gameObject.SetActive(false);
+            targetLockCrosshair.gameObject.SetActive(false);
         }
     }
 

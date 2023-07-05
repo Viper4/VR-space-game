@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 783d31327df308f4a83c508760868385, type: 3}
   m_Name: Asteroid Shape
   m_EditorClassIdentifier: 
-  meshFilterResolution: 200
+  meshFilterResolution: 132
   levelOfDetail: 1
   complexMeshCollider: 0
   meshColliderResolution: 8
@@ -56,55 +56,11 @@ MonoBehaviour:
         seed: {x: 0, y: 0, z: 0}
         strength: 20
         craters: 400
-        minCraterRadius: 0.02
-        maxCraterRadius: 0.075
+        minCraterRadius: 0.05
+        maxCraterRadius: 0.1
         craterFloor: 1
-        sizeDistribution: 1
-        ridgeHeight: 1
-        ridgeWidth: 0.05
-  - enabled: 1
-    useFirstLayerAsMask: 0
-    applyScale: 0
-    filterSettings:
-      filterType: 3
-      simplexNoiseSettings:
-        scale: {x: 2, y: 1, z: 1}
-        seed: {x: 0, y: 0, z: 0}
-        strength: 0.08
-        layers: 6
-        baseRoughness: 1
-        roughness: 2
-        persistence: 0.5
-        minValue: 0
-      ridgeNoiseSettings:
-        scale: {x: 2, y: 1, z: 1}
-        seed: {x: 0, y: 0, z: 0}
-        strength: 0
-        layers: 0
-        baseRoughness: 0
-        roughness: 0
-        persistence: 0
-        minValue: 0
-        weightMultiplier: 0
-      perlinNoiseSettings:
-        scale: {x: 2, y: 1, z: 1}
-        seed: {x: 0, y: 0, z: 0}
-        strength: 0
-        layers: 0
-        baseRoughness: 0
-        roughness: 0
-        persistence: 0
-        minValue: 0
-      craterSettings:
-        scale: {x: 1, y: 1, z: 1}
-        seed: {x: 0, y: 0, z: 0}
-        strength: 10
-        craters: 50
-        minCraterRadius: 0.075
-        maxCraterRadius: 0.15
-        craterFloor: 0.9
-        sizeDistribution: 1
-        ridgeHeight: 1.5
+        sizeDistribution: 2
+        ridgeHeight: 1.75
         ridgeWidth: 0.05
   - enabled: 1
     useFirstLayerAsMask: 0
@@ -162,7 +118,7 @@ MonoBehaviour:
         layers: 6
         baseRoughness: 1.75
         roughness: 2
-        persistence: 0.5
+        persistence: 0.6
         minValue: 0
       ridgeNoiseSettings:
         scale: {x: 1, y: 1, z: 1}

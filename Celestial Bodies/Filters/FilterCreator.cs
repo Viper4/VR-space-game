@@ -6,17 +6,14 @@ public static class FilterCreator
 {
     public static IFilter CreateFilter(FilterSettings settings)
     {
-        switch (settings.filterType)
+        return settings.filterType switch
         {
-            case FilterSettings.FilterType.Simplex:
-                return new SimplexNoiseFilter(settings.simplexNoiseSettings);
-            case FilterSettings.FilterType.Ridge:
-                return new RidgeNoiseFilter(settings.ridgeNoiseSettings);
-            case FilterSettings.FilterType.Perlin:
-                return new PerlinNoiseFilter(settings.perlinNoiseSettings);
-            case FilterSettings.FilterType.Crater:
-                return new CraterFilter(settings.craterSettings);
-        }
-        return null;
+            FilterSettings.FilterType.Simplex => new SimplexNoiseFilter(settings.simplexNoiseSettings),
+            FilterSettings.FilterType.Ridge => new RidgeNoiseFilter(settings.ridgeNoiseSettings),
+            FilterSettings.FilterType.Perlin => new PerlinNoiseFilter(settings.perlinNoiseSettings),
+            FilterSettings.FilterType.Crater => new CraterFilter(settings.craterSettings),
+            FilterSettings.FilterType.Valley => new ValleyNoiseFilter(settings.valleyNoiseSettings),
+            _ => null,
+        };
     }
 }

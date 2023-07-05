@@ -154,7 +154,7 @@ public class Radar : MonoBehaviour
                                         travelTime = -b / a;
                                     }
                                 }
-                                else if (shipRelativeAcceleration == colliderRelativeAcceleration && b < 0)
+                                else if (shipRelativeAcceleration == colliderRelativeAcceleration && b > 0)
                                 {
                                     travelTime = distance / b;
                                 }

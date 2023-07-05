@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -11,15 +10,20 @@ public class CraterFilter : IFilter
     public CraterFilter(FilterSettings.CraterSettings settings)
     {
         this.settings = settings;
-        for(int i = 0; i < settings.craters; i++)
-        {
-            float y = Mathf.Pow(Random.value, settings.sizeDistribution);
-            craters.Add(Random.onUnitSphere, Mathf.Max(settings.minCraterRadius, y * settings.maxCraterRadius));
-        }
+        craters = new Dictionary<Vector3, float>();
     }
 
     public float Evaluate(Vector3 point)
     {
+        if(craters.Count == 0)
+        {
+            for (int i = 0; i < settings.craters; i++)
+            {
+                float y = Mathf.Pow(Random.value, settings.sizeDistribution);
+                craters.Add(Random.onUnitSphere, Mathf.Max(settings.minCraterRadius, y * settings.maxCraterRadius));
+            }
+        }
+
         point = new Vector3(point.x * settings.scale.x, point.y * settings.scale.y, point.z * settings.scale.z);
         float height = 0;
         foreach (KeyValuePair<Vector3, float> crater in craters)
@@ -29,7 +33,7 @@ public class CraterFilter : IFilter
             float sqrRadius = radius * radius;
             if (sqrDistance <= sqrRadius)
             {
-                height += (Mathf.Max(-sqrRadius * settings.craterFloor, sqrDistance - sqrRadius) * settings.strength);
+                height += Mathf.Max(-sqrRadius * settings.craterFloor, sqrDistance - sqrRadius) * settings.strength;
             }
             else if (sqrDistance <= (radius + settings.ridgeWidth) * (radius + settings.ridgeWidth))
             {

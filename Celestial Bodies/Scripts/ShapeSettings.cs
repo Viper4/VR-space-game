@@ -8,6 +8,7 @@ public class ShapeSettings : ScriptableObject
     public const int numSupportedLODS = 24;
     public static int simpleMeshColliderSize = 6;
 
+    public float radius = 1;
     [Range(2, 256)]
     public int meshFilterResolution = 8;
     [Range(1, numSupportedLODS)]
@@ -15,7 +16,7 @@ public class ShapeSettings : ScriptableObject
     public bool complexMeshCollider = true;
     [ConditionalHide("complexMeshCollider"), Range(2, 256)]
     public int meshColliderResolution = 8;
-    public float radius = 1;
+    //public float radius = 1;
     public FilterLayer[] filterLayers;
 
     [System.Serializable]

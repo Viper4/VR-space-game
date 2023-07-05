@@ -7,8 +7,9 @@ public class GenerationSettings : ScriptableObject
 {
     public bool simple;
     public bool autoGenerate = true;
+    public bool sphere = true;
     public bool random = true;
-    [ConditionalHide("random")] public Vector2 radiusRange;
+    [ConditionalHide("random")] public Vector3[] scaleRange = new Vector3[2];
     public float sphereField = 100;
     public bool calculateMass = true;
     [ConditionalHide("calculateMass")] public float density = 50; // In kg / m^3

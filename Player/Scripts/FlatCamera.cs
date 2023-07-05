@@ -5,13 +5,18 @@ using UnityEngine;
 [RequireComponent(typeof(Camera))]
 public class FlatCamera : MonoBehaviour
 {
-    public static Camera instance;
-    [SerializeField] Transform source;
-
-    void Start()
-    {
-        instance = GetComponent<Camera>();
+    private static Camera _instance;
+    public static Camera instance { 
+        get
+        {
+            if(_instance == null)
+            {
+                _instance = FindObjectOfType<FlatCamera>().GetComponent<Camera>();
+            }
+            return _instance;
+        }
     }
+    [SerializeField] Transform source;
 
     void LateUpdate()
     {

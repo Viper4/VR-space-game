@@ -4,52 +4,55 @@ using UnityEngine;
 
 public class Torpedo : MonoBehaviour
 {
-    public Transform target;
+    Transform target;
     public float detonationDistance = 5;
     [SerializeField] float propulsionForce = 1000;
     [SerializeField] float translationForce = 50;
     [SerializeField] float rotationForce = 100;
     Rigidbody _rigidbody;
-    PIDController translationPID;
     PIDController rotationPID;
+    PIDController translationPID;
     [SerializeField] float p, i, d;
     bool active;
 
-    void Start()
-    {
-        _rigidbody = GetComponent<Rigidbody>();
-        translationPID = new PIDController(p, i, d);
-        rotationPID = new PIDController(p, i ,d);
-    }
-
     void Update()
     {
-        if (target)
+        if (active)
         {
-            Vector3 targetDirection = target.position - transform.position;
-            Vector3 error = targetDirection - transform.forward;
-            float torqueX = Mathf.Clamp(rotationPID.GetOutput(error.x, Time.deltaTime), -rotationForce, rotationForce);
-            float torqueY = Mathf.Clamp(rotationPID.GetOutput(error.y, Time.deltaTime), -rotationForce, rotationForce);
-            float torqueZ = Mathf.Clamp(rotationPID.GetOutput(error.z, Time.deltaTime), -rotationForce, rotationForce);
-            _rigidbody.AddRelativeTorque(new Vector3(torqueX, torqueY, torqueZ) * rotationForce, ForceMode.Acceleration);
-            if(error.sqrMagnitude < 4)
+            if (target != null)
             {
-                _rigidbody.AddRelativeForce(Vector3.forward * propulsionForce, ForceMode.Acceleration);
+                Vector3 targetDirection = target.position - transform.position;
+                Vector3 rotationError = targetDirection - transform.forward;
+                float torqueX = Mathf.Clamp(rotationPID.GetOutput(rotationError.x, Time.deltaTime), -rotationForce, rotationForce);
+                float torqueY = Mathf.Clamp(rotationPID.GetOutput(rotationError.y, Time.deltaTime), -rotationForce, rotationForce);
+                float torqueZ = Mathf.Clamp(rotationPID.GetOutput(rotationError.z, Time.deltaTime), -rotationForce, rotationForce);
+                _rigidbody.AddTorque(new Vector3(torqueX, torqueY, torqueZ) * rotationForce, ForceMode.Acceleration);
+
+                Vector3 velocityError = targetDirection - _rigidbody.velocity.normalized;
+                float forceX = Mathf.Clamp(translationPID.GetOutput(velocityError.x, Time.deltaTime), -translationForce, translationForce);
+                float forceY = Mathf.Clamp(translationPID.GetOutput(velocityError.x, Time.deltaTime), -translationForce, translationForce);
+                float forceZ = Mathf.Clamp(translationPID.GetOutput(velocityError.x, Time.deltaTime), -translationForce, translationForce);
+                _rigidbody.AddForce(new Vector3(forceX, forceY, forceZ));
+
+                if (rotationError.sqrMagnitude < 2)
+                    _rigidbody.AddForce(transform.forward * propulsionForce, ForceMode.Acceleration);
+
+                if ((target.position - transform.position).sqrMagnitude < detonationDistance * detonationDistance)
+                    Detonate();
             }
-            if ((target.position - transform.position).sqrMagnitude < detonationDistance * detonationDistance)
+            else
             {
-                Detonate();
+                _rigidbody.AddForce(transform.forward * propulsionForce, ForceMode.Acceleration);
             }
-        }
-        else
-        {
-            if(active)
-                _rigidbody.AddRelativeForce(Vector3.forward * propulsionForce, ForceMode.Acceleration);
         }
     }
 
-    public void Activate(float delay)
+    public void Activate(Rigidbody rigidbody, Transform target, float delay)
     {
+        _rigidbody = rigidbody;
+        this.target = target;
+        rotationPID = new PIDController(p, i, d);
+        translationPID = new PIDController(p, i, d);
         StartCoroutine(ActivateRoutine(delay));
     }
 
@@ -67,7 +70,6 @@ public class Torpedo : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        Debug.Log("Here " + collision.transform.name);
         Detonate();
     }
 }

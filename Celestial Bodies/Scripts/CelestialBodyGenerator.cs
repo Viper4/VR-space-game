@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class CelestialBodyGenerator : MonoBehaviour
 {
-    [SerializeField] Camera targetCamera;
     public bool autoUpdate = true;
     public enum FaceRenderMask
     {
@@ -18,10 +17,10 @@ public class CelestialBodyGenerator : MonoBehaviour
     }
     public FaceRenderMask renderMask;
 
-    private ShapeSettings originalShapeSettings;
-    public ShapeSettings shapeSettings;
-    private ColorSettings originalColorSettings;
-    public ColorSettings colorSettings;
+    public ShapeSettings originalShapeSettings;
+    private ShapeSettings shapeSettings;
+    public ColorSettings originalColorSettings;
+    private ColorSettings colorSettings;
     [SerializeField] bool cloneSettings;
 
     [HideInInspector] public bool shapeSettingsFoldout;
@@ -44,26 +43,18 @@ public class CelestialBodyGenerator : MonoBehaviour
         Material bodyMaterial;
         if (cloneSettings)
         {
-            if (originalShapeSettings == null)
-            {
-                originalShapeSettings = shapeSettings;
-                shapeSettings = Instantiate(originalShapeSettings);
-            }
-            if (originalColorSettings == null)
-            {
-                originalColorSettings = colorSettings;
-                colorSettings = Instantiate(originalColorSettings);
-            }
+            shapeSettings = Instantiate(originalShapeSettings);
+            colorSettings = Instantiate(originalColorSettings);
             bodyMaterial = Instantiate(colorSettings.material);
         }
         else
         {
-            originalShapeSettings = null;
-            originalColorSettings = null;
+            shapeSettings = originalShapeSettings;
+            colorSettings = originalColorSettings;
             bodyMaterial = colorSettings.material;
         }
 
-        foreach(ShapeSettings.FilterLayer filterLayer in shapeSettings.filterLayers)
+        foreach (ShapeSettings.FilterLayer filterLayer in shapeSettings.filterLayers)
         {
             if (filterLayer.applyScale)
             {
@@ -78,15 +69,21 @@ public class CelestialBodyGenerator : MonoBehaviour
         colorGenerator.UpdateSettings(colorSettings, bodyMaterial);
 
         int childCount = transform.childCount;
+        int childIndex = 0;
         for (int i = 0; i < childCount; i++)
         {
-            if (Application.isEditor)
+            Transform child = transform.GetChild(childIndex);
+            if (child.name.Contains("Mesh"))
             {
-                DestroyImmediate(transform.GetChild(0).gameObject);
+                if (Application.isEditor)
+                    DestroyImmediate(child.gameObject);
+                else
+                    Destroy(child.gameObject);
             }
             else
             {
-                Destroy(transform.GetChild(0).gameObject);
+                childIndex++;
+                //childCount--;
             }
         }
 
@@ -97,7 +94,7 @@ public class CelestialBodyGenerator : MonoBehaviour
         int arrayIndex = 0;
         for (int i = 0; i < 6; i++)
         {
-            for(int r = 0; r < rootLOD; r++)
+            for (int r = 0; r < rootLOD; r++)
             {
                 for (int c = 0; c < rootLOD; c++)
                 {
@@ -129,55 +126,6 @@ public class CelestialBodyGenerator : MonoBehaviour
     public void GenerateRandomCelestialBody()
     {
         Init();
-        foreach (var noiseLayer in shapeSettings.filterLayers)
-        {
-            switch (noiseLayer.filterSettings.filterType)
-            {
-                case FilterSettings.FilterType.Simplex:
-                    noiseLayer.filterSettings.simplexNoiseSettings.seed = RandomSeed();
-                    break;
-                case FilterSettings.FilterType.Ridge:
-                    noiseLayer.filterSettings.ridgeNoiseSettings.seed = RandomSeed();
-                    break;
-                case FilterSettings.FilterType.Perlin:
-                    noiseLayer.filterSettings.perlinNoiseSettings.seed = RandomSeed();
-                    break;
-                case FilterSettings.FilterType.Crater:
-                    noiseLayer.filterSettings.craterSettings.seed = RandomSeed();
-                    break;
-            }
-        }
-        switch (colorSettings.biomeColorSettings.filter.filterType)
-        {
-            case FilterSettings.FilterType.Simplex:
-                colorSettings.biomeColorSettings.filter.simplexNoiseSettings.seed = RandomSeed();
-                break;
-            case FilterSettings.FilterType.Ridge:
-                colorSettings.biomeColorSettings.filter.ridgeNoiseSettings.seed = RandomSeed();
-                break;
-            case FilterSettings.FilterType.Perlin:
-                colorSettings.biomeColorSettings.filter.perlinNoiseSettings.seed = RandomSeed();
-                break;
-            case FilterSettings.FilterType.Crater:
-                colorSettings.biomeColorSettings.filter.craterSettings.seed = RandomSeed();
-                break;
-        }
-        GenerateMeshes();
-        GenerateColors();
-    }
-
-    public void GenerateCelestialBody(float radius)
-    {
-        Init();
-        shapeSettings.radius = radius;
-        GenerateMeshes();
-        GenerateColors();
-    }
-
-    public void GenerateRandomCelestialBody(float radius)
-    {
-        Init();
-        shapeSettings.radius = radius;
         foreach (var noiseLayer in shapeSettings.filterLayers)
         {
             switch (noiseLayer.filterSettings.filterType)
@@ -251,7 +199,7 @@ public class CelestialBodyGenerator : MonoBehaviour
     /* TODO:
      * Add option to apply coloring based on random noise instead of elevation and/or biome
      */
-    void GenerateColors()
+    public void GenerateColors()
     {
         colorGenerator.UpdateColors();
         for (int i = 0; i < 6 * rootLOD * rootLOD; i++)

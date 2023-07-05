@@ -23,7 +23,8 @@ public class ColorGenerator
 
     public void UpdateElevation(MinMax elevationMinMax)
     {
-        materialInstance.SetVector("_ElevationMinMax", new Vector4(elevationMinMax.Min, elevationMinMax.Max));
+        if(materialInstance != null)
+            materialInstance.SetVector("_ElevationMinMax", new Vector4(elevationMinMax.Min, elevationMinMax.Max));
     }
 
     // At biomes >= 4 the colors of the biomes are "foggy" at low blend values
@@ -47,21 +48,24 @@ public class ColorGenerator
 
     public void UpdateColors()
     {
-        Color[] colors = new Color[texture.width * texture.height];
-        int colorIndex = 0;
-        foreach(ColorSettings.BiomeColorSettings.Biome biome in settings.biomeColorSettings.biomes)
+        if(materialInstance != null)
         {
-            Color tintColor = biome.tint;
-            for (int i = 0; i < textureResolution; i++)
+            Color[] colors = new Color[texture.width * texture.height];
+            int colorIndex = 0;
+            foreach (ColorSettings.BiomeColorSettings.Biome biome in settings.biomeColorSettings.biomes)
             {
-                Color gradientColor = biome.gradient.Evaluate(i / (textureResolution - 1f));
-                colors[colorIndex] = gradientColor * (1 - biome.tintPercent) + tintColor * biome.tintPercent;
-                colorIndex++;
+                Color tintColor = biome.tint;
+                for (int i = 0; i < textureResolution; i++)
+                {
+                    Color gradientColor = biome.gradient.Evaluate(i / (textureResolution - 1f));
+                    colors[colorIndex] = gradientColor * (1 - biome.tintPercent) + tintColor * biome.tintPercent;
+                    colorIndex++;
+                }
             }
-        }
 
-        texture.SetPixels(colors);
-        texture.Apply();
-        materialInstance.SetTexture("_MainTexture", texture);
+            texture.SetPixels(colors);
+            texture.Apply();
+            materialInstance.SetTexture("_MainTexture", texture);
+        }
     }
 }

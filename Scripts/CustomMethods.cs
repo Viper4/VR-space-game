@@ -1063,5 +1063,38 @@ namespace SpaceStuff
         {
             return new Vector3((float)vector.x, (float)vector.y, (float)vector.z);
         }
+
+        public static GameObject GenerateModel(GameObject GO, int modelLayer, Material modelMaterial, int childDepth)
+        {
+            GameObject model = new GameObject
+            {
+                layer = modelLayer,
+                name = GO.name + " Model"
+            };
+            if (GO.TryGetComponent<MeshFilter>(out var meshFilter))
+            {
+                MeshFilter modelMesh = model.AddComponent<MeshFilter>();
+                MeshRenderer modelRenderer = model.AddComponent<MeshRenderer>();
+                modelMesh.sharedMesh = meshFilter.sharedMesh;
+                int materialsLength = meshFilter.GetComponent<MeshRenderer>().sharedMaterials.Length;
+                Material[] modelMaterials = new Material[materialsLength];
+                for (int i = 0; i < materialsLength; i++)
+                {
+                    modelMaterials[i] = modelMaterial;
+                }
+                modelRenderer.sharedMaterials = modelMaterials;
+            }
+            if(childDepth > 0)
+            {
+                foreach (Transform child in GO.transform)
+                {
+                    GameObject childModel = GenerateModel(child.gameObject, modelLayer, modelMaterial, childDepth - 1);
+                    childModel.transform.SetLocalPositionAndRotation(child.localPosition, child.localRotation);
+                    childModel.transform.SetParent(model.transform);
+                }
+            }
+
+            return model;
+        }
     }
 }

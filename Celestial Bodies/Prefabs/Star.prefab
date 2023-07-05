@@ -54,7 +54,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 660b2028be04cb445a20efd3df3e65c9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  inScaledSpace: 1
+  inScaledSpace: 0
   _position:
     x: 0
     y: 0
@@ -178,7 +178,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e67c9a4f7bd32b64e98f85e426f57e36, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _isKinematic: 0
+  attachedRigidbody: {fileID: 0}
+  lowerVelocityThreshold: -1
+  upperVelocityThreshold: -1
   velocity:
+    x: 0
+    y: 0
+    z: 0
+  angularVelocity:
     x: 0
     y: 0
     z: 0
@@ -284,7 +292,7 @@ Light:
   m_InnerSpotAngle: 21.80208
   m_CookieSize: 10
   m_Shadows:
-    m_Type: 1
+    m_Type: 2
     m_Resolution: -1
     m_CustomResolution: -1
     m_Strength: 1
